@@ -40,6 +40,20 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->chartView->setChart(chart);
     ui->chartView->setRenderHint(QPainter::Antialiasing);
+
+    //can only change profile info in edit mode
+    //can maybe add default values
+    ui->profileNameValue->setReadOnly(true);
+    ui->basalRateValue->setReadOnly(true);
+    ui->carbRatioValue->setReadOnly(true);
+    ui->correctionValue->setReadOnly(true);
+    ui->targetGlucoseValue->setReadOnly(true);
+
+    //example profile value - no data stored
+    QListWidgetItem *newItem = new QListWidgetItem("Test", ui->profileList); //later can attach profile data to list item
+    ui->profileList->addItem(newItem);
+
+
 }
 
 MainWindow::~MainWindow()
