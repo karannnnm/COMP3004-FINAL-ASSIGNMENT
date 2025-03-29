@@ -28,7 +28,7 @@
 border: 1px solid black;</string>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="home_screen">
      <widget class="QLabel" name="battery">
@@ -293,18 +293,358 @@ border: 1px solid black;</string>
      </widget>
     </widget>
     <widget class="QWidget" name="bolus_calculator">
-     <widget class="QLabel" name="label_2">
+     <widget class="QFrame" name="frame_2">
       <property name="geometry">
        <rect>
-        <x>30</x>
-        <y>30</y>
-        <width>62</width>
-        <height>17</height>
+        <x>0</x>
+        <y>0</y>
+        <width>701</width>
+        <height>61</height>
        </rect>
       </property>
-      <property name="text">
-       <string>bolus</string>
+      <property name="styleSheet">
+       <string notr="true">background-color: #FFFFFF;       
+border: 1px solid #DDD;         
+padding: 5px;</string>
       </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QLabel" name="label_2">
+       <property name="geometry">
+        <rect>
+         <x>210</x>
+         <y>10</y>
+         <width>261</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">    font-size: 20px;
+    font-weight: bold;
+    color: rgb(119, 118, 123);
+    padding: 10px;
+border: none;</string>
+       </property>
+       <property name="text">
+        <string>BOLUS CALCULATOR</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QFrame" name="bolusInputValues">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>80</y>
+        <width>681</width>
+        <height>101</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #FFFFFF;       
+border: 1px solid #DDD;         
+border-radius: 8px;
+padding: 5px;</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QPushButton" name="fetchCGM">
+       <property name="geometry">
+        <rect>
+         <x>450</x>
+         <y>40</y>
+         <width>181</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Fetch Values From CGM</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="carbohydrates">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>60</y>
+         <width>221</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Carbohydrates (grams):</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="bloodGlucose">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>20</y>
+         <width>221</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Current Blood Glucose (mmol/L):</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="bloodGlucoseLevelValue">
+       <property name="geometry">
+        <rect>
+         <x>260</x>
+         <y>20</y>
+         <width>113</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">    border-radius: 4px;
+</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="carbohydratesValue">
+       <property name="geometry">
+        <rect>
+         <x>260</x>
+         <y>60</y>
+         <width>113</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">    border-radius: 4px;
+</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QFrame" name="frame_3">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>230</y>
+        <width>681</width>
+        <height>121</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #FFFFFF;       
+border: 1px solid #DDD;         
+border-radius: 8px;
+padding: 5px;</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QLabel" name="suggestedDoseValue">
+       <property name="geometry">
+        <rect>
+         <x>260</x>
+         <y>20</y>
+         <width>121</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Suggested Dose</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="suggestedDose">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>20</y>
+         <width>221</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Suggested Dose (units):</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="overrideDoseValue">
+       <property name="geometry">
+        <rect>
+         <x>260</x>
+         <y>80</y>
+         <width>121</width>
+         <height>25</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="overrideDose">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>80</y>
+         <width>221</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Override Dose (units):</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QFrame" name="frame_4">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>400</y>
+        <width>681</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #FFFFFF;       
+border: 1px solid #DDD;         
+border-radius: 8px;
+padding: 5px;</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QRadioButton" name="extendedBolus">
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>30</y>
+         <width>106</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border: none;</string>
+       </property>
+       <property name="text">
+        <string>Extended</string>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="quickBolus">
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>10</y>
+         <width>106</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border: none;</string>
+       </property>
+       <property name="text">
+        <string>Quick</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="bolusType">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>10</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Bolus Type: </string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QFrame" name="frame_5">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>530</y>
+        <width>681</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #FFFFFF;       
+border: 1px solid #DDD;         
+border-radius: 8px;
+padding: 5px;</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QPushButton" name="stopBolusButton">
+       <property name="geometry">
+        <rect>
+         <x>410</x>
+         <y>10</y>
+         <width>121</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">    background-color: rgb(237, 51, 59);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;</string>
+       </property>
+       <property name="text">
+        <string>Stop Bolus</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="cancelBolusButton">
+       <property name="geometry">
+        <rect>
+         <x>270</x>
+         <y>10</y>
+         <width>121</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">    background-color: rgb(255, 163, 72);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;</string>
+       </property>
+       <property name="text">
+        <string>Cancel Bolus</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="confirmBolusButton">
+       <property name="geometry">
+        <rect>
+         <x>110</x>
+         <y>10</y>
+         <width>131</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">    background-color: rgb(51, 209, 122);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;</string>
+       </property>
+       <property name="text">
+        <string>Confirm Bolus</string>
+       </property>
+      </widget>
      </widget>
     </widget>
    </widget>
