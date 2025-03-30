@@ -31,7 +31,7 @@
 border: 1px solid black;</string>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="powerOffScreen">
      <widget class="QFrame" name="frame_14">
@@ -297,27 +297,6 @@ font-size: 16px;</string>
        <string>History</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="settingsButton">
-      <property name="geometry">
-       <rect>
-        <x>490</x>
-        <y>580</y>
-        <width>151</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(119, 118, 123);
-border: none;
-color: white;
-border-radius: 8px;
-padding: 10px 20px;
-font-size: 16px;</string>
-      </property>
-      <property name="text">
-       <string>Settings</string>
-      </property>
-     </widget>
      <widget class="QChartView" name="chartView" native="true">
       <property name="geometry">
        <rect>
@@ -495,6 +474,30 @@ border: 1px solid black;</string>
       </property>
       <property name="text">
        <string>250 units</string>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="optionsButton">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>580</y>
+        <width>151</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(119, 118, 123);
+border: none;
+color: white;
+border-radius: 8px;
+padding: 10px 20px;
+font-size: 16px;</string>
+      </property>
+      <property name="text">
+       <string>Options</string>
+      </property>
+      <property name="popupMode">
+       <enum>QToolButton::InstantPopup</enum>
       </property>
      </widget>
     </widget>
@@ -1299,13 +1302,16 @@ padding: 10px;
      </widget>
     </widget>
    </widget>
-   <widget class="QLabel" name="label">
+   <widget class="QPushButton" name="tandemLogoButton">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
-      <x>1030</x>
-      <y>300</y>
-      <width>21</width>
-      <height>31</height>
+      <x>1020</x>
+      <y>330</y>
+      <width>41</width>
+      <height>25</height>
      </rect>
     </property>
     <property name="styleSheet">
