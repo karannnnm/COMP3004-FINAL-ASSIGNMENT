@@ -17,5 +17,10 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    const QString correctPIN = "1234";  // Hardcoded PIN
+
+private slots:
+    void onPowerButtonHeld(); // Called when power button is held
+    void onUnlockButtonClicked();
 };
 #endif // MAINWINDOW_H

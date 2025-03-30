@@ -31,9 +31,212 @@
 border: 1px solid black;</string>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
-    <widget class="QWidget" name="home_screen">
+    <widget class="QWidget" name="powerOffScreen">
+     <widget class="QFrame" name="frame_14">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>681</width>
+        <height>621</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #FFFFFF;       
+border: 1px solid #DDD;         
+padding: 5px;
+border-radius: 8px;
+</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QLabel" name="label_10">
+       <property name="geometry">
+        <rect>
+         <x>260</x>
+         <y>280</y>
+         <width>161</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">    font-size: 20px;
+    font-weight: bold;
+    color: rgb(119, 118, 123);
+    padding: 10px;
+border: none;</string>
+       </property>
+       <property name="text">
+        <string>POWER OFF</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_11">
+       <property name="geometry">
+        <rect>
+         <x>220</x>
+         <y>320</y>
+         <width>241</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">    font-size: 15px;
+    color: rgb(0, 0, 0);
+    padding: 10px;
+border: none;</string>
+       </property>
+       <property name="text">
+        <string>Hold power button to turn on</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="powerButton">
+       <property name="geometry">
+        <rect>
+         <x>290</x>
+         <y>370</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(87, 227, 137);
+color: white;</string>
+       </property>
+       <property name="text">
+        <string>Power Button</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="pinLockScreen">
+     <widget class="QFrame" name="frame_12">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>250</y>
+        <width>641</width>
+        <height>121</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #FFFFFF;       
+border: 1px solid #DDD;         
+border-radius: 8px;
+padding: 5px;</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QLabel" name="label_8">
+       <property name="geometry">
+        <rect>
+         <x>70</x>
+         <y>40</y>
+         <width>121</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">    font-size: 15px;
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+    padding: 10px;
+</string>
+       </property>
+       <property name="text">
+        <string>Password:</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="passwordValue">
+       <property name="geometry">
+        <rect>
+         <x>210</x>
+         <y>50</y>
+         <width>211</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="echoMode">
+        <enum>QLineEdit::Password</enum>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="unlockButton">
+       <property name="geometry">
+        <rect>
+         <x>440</x>
+         <y>40</y>
+         <width>111</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(98, 160, 234);
+border: none;
+color: white;
+border-radius: 8px;
+padding: 10px 20px;
+</string>
+       </property>
+       <property name="text">
+        <string>Unlock</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QFrame" name="frame_13">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>701</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #FFFFFF;       
+border: 1px solid #DDD;         
+padding: 5px;</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QLabel" name="label_9">
+       <property name="geometry">
+        <rect>
+         <x>230</x>
+         <y>10</y>
+         <width>211</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">    font-size: 20px;
+    font-weight: bold;
+    color: rgb(119, 118, 123);
+    padding: 10px;
+border: none;</string>
+       </property>
+       <property name="text">
+        <string>PIN-Lock Screen</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="homeScreen">
      <widget class="QLabel" name="battery">
       <property name="geometry">
        <rect>
@@ -295,7 +498,7 @@ border: 1px solid black;</string>
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="bolus_calculator">
+    <widget class="QWidget" name="bolusCalculator">
      <widget class="QFrame" name="frame_2">
       <property name="geometry">
        <rect>
@@ -996,6 +1199,101 @@ padding: 5px;</string>
        </property>
        <property name="text">
         <string>New Profile</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="logPage">
+     <widget class="QFrame" name="frame_10">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>701</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #FFFFFF;       
+border: 1px solid #DDD;         
+padding: 5px;</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QLabel" name="label_6">
+       <property name="geometry">
+        <rect>
+         <x>110</x>
+         <y>10</y>
+         <width>451</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">    font-size: 20px;
+    font-weight: bold;
+    color: rgb(119, 118, 123);
+    padding: 10px;
+border: none;</string>
+       </property>
+       <property name="text">
+        <string>Insulin Pump Information and History</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QFrame" name="frame_11">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>70</y>
+        <width>681</width>
+        <height>571</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #FFFFFF;       
+border: 1px solid #DDD;         
+border-radius: 8px;
+padding: 5px;</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QTextEdit" name="log">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>60</y>
+         <width>641</width>
+         <height>491</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_7">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>10</y>
+         <width>71</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font-size: 15px;
+font-weight: bold;
+color: rgb(0, 0, 0);
+padding: 10px;
+</string>
+       </property>
+       <property name="text">
+        <string>Log:</string>
        </property>
       </widget>
      </widget>
