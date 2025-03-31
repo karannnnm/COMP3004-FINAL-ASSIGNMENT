@@ -123,4 +123,5 @@ void MainWindow::option1Clicked()
 void MainWindow::option2Clicked()
 {
     ui->stackedWidget->setCurrentIndex(0);
+    ui->tandemLogoButton->setEnabled(false);
 }
