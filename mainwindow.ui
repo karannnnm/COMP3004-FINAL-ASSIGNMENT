@@ -31,7 +31,7 @@
 border: 1px solid black;</string>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="powerOffScreen">
      <widget class="QFrame" name="frame_14">
@@ -904,7 +904,7 @@ border: none;</string>
         <x>360</x>
         <y>100</y>
         <width>321</width>
-        <height>321</height>
+        <height>351</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -1016,56 +1016,77 @@ border: none;</string>
         </rect>
        </property>
       </widget>
-      <widget class="QLineEdit" name="basalRateValue">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
+      <widget class="QPushButton" name="saveProfileButton">
        <property name="geometry">
         <rect>
-         <x>180</x>
-         <y>110</y>
-         <width>113</width>
-         <height>25</height>
+         <x>90</x>
+         <y>300</y>
+         <width>131</width>
+         <height>41</height>
         </rect>
        </property>
-      </widget>
-      <widget class="QLineEdit" name="carbRatioValue">
-       <property name="enabled">
-        <bool>true</bool>
+       <property name="styleSheet">
+        <string notr="true">    background-color: rgb(220, 138, 221);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;</string>
        </property>
-       <property name="geometry">
-        <rect>
-         <x>180</x>
-         <y>160</y>
-         <width>113</width>
-         <height>25</height>
-        </rect>
+       <property name="text">
+        <string>Save Profile</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="correctionValue">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>180</x>
-         <y>210</y>
-         <width>113</width>
-         <height>25</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="targetGlucoseValue">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
+      <widget class="QDoubleSpinBox" name="targetGlucoseValue">
        <property name="geometry">
         <rect>
          <x>180</x>
          <y>260</y>
-         <width>113</width>
-         <height>25</height>
+         <width>111</width>
+         <height>26</height>
         </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: none;</string>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="correctionValue">
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>210</y>
+         <width>111</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: none;</string>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="carbRatioValue">
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>160</y>
+         <width>111</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: none;</string>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="basalRateValue">
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>110</y>
+         <width>111</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: none;</string>
        </property>
       </widget>
      </widget>
@@ -1075,7 +1096,7 @@ border: none;</string>
         <x>20</x>
         <y>100</y>
         <width>321</width>
-        <height>321</height>
+        <height>351</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -1115,7 +1136,7 @@ border: none;</string>
          <x>25</x>
          <y>50</y>
          <width>271</width>
-         <height>251</height>
+         <height>281</height>
         </rect>
        </property>
       </widget>
