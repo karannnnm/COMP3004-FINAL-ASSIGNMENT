@@ -1,0 +1,237 @@
+OVERVIEW OF THE MACHINE:
+(
+User Provides:
+Basal rate, carb ratio, correction factor, and target glucose.
+
+Machine Processes:
+Calculates the required insulin dosage.
+Adjusts delivery dynamically based on glucose levels (Control-IQ simulation).
+
+Machine Provides:
+Insulin delivery (basal + bolus).
+Real-time feedback on glucose levels and insulin activity.
+Alerts and logs for safety and reference.
+)
+
+
+
+
+
+CONTROL IQ - 
+	- Purpose: Automatically adjusts insulin delivery based on CGM glucose readings.
+	
+	- Functionality:
+		Increases basal insulin when glucose is rising or too high.
+		Decreases or stops basal insulin when glucose is dropping or too low.
+	
+	- Glucose Thresholds:
+
+		Below 3.9 mmol/L → Suspends insulin delivery.
+		Above 10 mmol/L → Increases basal insulin.
+		Predictive model prevents glucose fluctuations.
+	
+	
+	-plots the glucose level of the user on a graph. For the range of glucose levels we can use 2 - 22mmol/L. And for the most current reading of the glucose level, use a realistic random number between the range depending 			on the previous number.
+
+			For eg: User starts the machine for the first time. let the default value be 3.4 mmol/L , after every 30 mins let the glucose level drop by 0.20 mmol/L. After every meal, glucose level increase by 1.2 mmol/L.
+				After every insulin delivery from bolus, glucose level will incrementally increase by 0.45 mmol/L every hour (maximum 3 hours). Maximum bolus duration should be 3 hours.
+
+
+------------------------------------------------------------------------------------
+1) pump home screen : 
+	top left - device battery
+	top right - insulin fill gauge which indicates how much insulin left in the 300-unit cartridge
+	IOB (Insulin on board) indicator which shows how much insulin is still active from previous bolus injection
+	bottom left - Bolus button which directs to bolus calc
+	bottom right - options button which provides access to ALERTS, SYS CONFIG, INSULIN DELIVERY SETTINGS.
+	Tandem logo - to redirect to homescreen
+
+2) prereqs - 
+	- pump has to be charged via usb
+	- hold power button until device turns on
+	- can turn off via options button
+	- PIN required to turn on device.
+
+3) Insulin delivery Settings (allows users to configure how the pump administers insulin) -
+	- CRUD operations for profiles made for user specific needs like varying basal rates during sleep or exercise.
+	- user can create a new profile by nav to the personal profile section and entering critical settings like INPUT VARIABLES: 			basal rates, carb ratio, correction factors and target glucose levels.
+	- each profile can be named on specific routines like Morning Routine or Exercise Routine.
+	- once a profile is created, can perform CRUD operations on it.
+	- can update the profile to increase basal insulin delivery (basal rate) during heavy workout. or decrease carb ratio for a 				heavy meal.
+
+
+	MY SUMMARY:
+
+	In the Insulin Delivery Settings screen:
+	The user can perform CRUD operations on profiles.
+
+	Each profile has 4 input variables:
+	Basal rates
+	Carb ratio
+	Correction factors
+	Target glucose levels
+
+	Users can create different profiles (e.g., "Lunch," "Exercise," "Night"), but each profile contains these same 4 variables.
+
+	When the User Edits a Profile
+	If the user anticipates a heavier lunch, they can:
+	Edit the carb ratio in the "Lunch" profile.
+
+	Example:
+	From 1:15 (1 unit per 15g of carbs)
+	To 1:10 (1 unit per 10g of carbs) → More insulin per gram of carbs.
+
+	The machine does not output anything on this screen.
+	This screen is only for editing and saving profile variables.
+	The actual insulin calculation and delivery will happen later when the user uses this profile during insulin administration
+
+
+4) Manual Bolus 
+	- user can initiate the bolus when they click on the bolus button on homescreen.
+	- they can enter their INPUT VARIABLE : glucose level and carb intake manually or pull the variables from CGM	
+	- the bolus calculator uses some formulas and then suggests an appropriate dose based on program settings such as insulin sens and target glucose level.
+	- The pump calculates the bolus dose using the programmed profile settings:
+		Carb ratio
+		Correction factor
+		Target glucose level
+	- Users can:
+		Override the suggested dose by manually adjusting it.
+		Select extended boluses (Spread the dose over a period e.g., 50% immediately, 50% over 2 hours) or quick boluses 				(immediate correction).
+		Cancel or stop a bolus mid-delivery.
+	
+
+
+
+	- Variables required for bolus calculation:
+				
+		------------------------------
+		->VARIABLES COMING FROM THE PROFILE SETTINGS.
+		
+		- Insulin-to-Carb Ratio (ICR): 1 unit per 1g carbohydrate.
+			= This comes from the profile settings and defines how much insulin is required to cover a 			           specific amount of carbs.
+		
+		 - Correction Factor (CF) / Insulin Sensitivity Factor (ISF): 1 unit per 1 mmol/L
+			= Also from the profile, it specifies how much 1 unit of insulin lowers blood glucose.
+
+		• Target Blood Glucose: 5 mmol/L
+			= The desired glucose level that the pump aims to maintain, also part of the profile.
+
+		-----------------------------------
+		-> THESE ARE INPUT VARIABLES WHICH USER WILL PROVIDE WHEN THEY CLICK ON 			BOLUS BUTTON
+	
+		• Current Blood Glucose: 7 mmol/L
+			=The real-time blood sugar level at the time of bolus calculation
+		
+		- Total Carbs (missing in the feature draft) - 50gm
+			= The amount of carbs being consumed
+
+		------------------------------------
+
+		• Insulin On Board (IOB): 5 units
+			= comes from home screen? for the first time bolus calculation use a default value of 2-5 units. After each insulin delivery IOB decreases by some units.
+		
+		------------------------------------
+		OUTPUT
+
+		• Total Bolus Required: 47 units
+			= The final insulin dose after accounting for carbs, correction, and IOB.
+		
+		• Bolus Distribution Duration: 3 hours
+			=The period over which the bolus is spread.
+		
+		• Immediate Bolus Fraction: 60%
+			= The percentage of the bolus delivered immediately.
+
+
+
+
+
+5) Starting, Stopping, or Resuming Insulin (check Control IQ section as well )  -
+	
+
+	- Starting insulin delivery = Users select a basal rate from their profile or configure from options. the pump then continuously delivers insulin at that rate until stopped.
+	- stopping insulin delivery =
+		 Manually =  user can stop insulin delivery through options.
+		 Automatically  = The Control-IQ system can detect low glucose levels (below 3.9 mmol/L) and suspend basal delivery to prevent hypoglycemia.
+	- Resuming insulin = When glucose levels stabilize, the pump automatically or manually resumes delivering insulin based on the previous basal rate or an updated profile.
+
+	
+	in a nutshell - When the pump is running, it continuously delivers basal insulin.
+				When the user eats, they manually initiate a bolus.
+				Control-IQ monitors glucose levels:
+				If glucose drops too low, basal insulin is paused automatically.
+				When glucose stabilizes, basal insulin resumes
+
+
+6) Data Storage.
+	- Logged Data:
+		Basal Rates:
+			Continuous background insulin delivery levels over time.
+
+		Bolus Injections:
+			Time and amount of manual or extended boluses.
+
+		Insulin Duration:
+			The duration over which insulin is actively lowering blood glucose (related to IOB calculations).
+		
+		Correction Factors:
+			Details about how much insulin was delivered to correct high glucose events.	
+	
+	- User Access:
+
+		Users can access this historical data through the current status screen.
+
+		They can review:
+			Recent bolus events → Time, dose, and duration.
+			Basal rate changes → When Control-IQ increased or decreased basal delivery.
+			CGM-triggered alerts → Suspensions or increases in insulin delivery.
+
+
+		{ in a nutshell: 
+		
+		Every insulin event (basal, bolus, correction) needs to be logged with the following details:
+			Timestamp
+			Type of delivery (basal, bolus, correction, suspension)
+			Insulin amount
+			Glucose reading at the time
+			Duration of the bolus (for extended boluses)
+			IOB value after the event
+
+		create a simple UI to display all this data.
+		}
+
+
+
+7) Errors:
+ 	Display alerts for common issues such as low battery, low insulin, or CGM disconnection trigger alerts that inform users of corrective actions
+		Low battery → Display a pop-up warning.
+		Low insulin → Notify the user to refill the reservoir.
+		CGM disconnection → Display a message and temporarily suspend Control-IQ adjustments.
+		
+		For critical errors:
+			Suspend all insulin delivery.
+			Display a "Delivery Suspended" warning.
+		Log the suspension event with:
+			Timestamp
+			Glucose level at the time
+			Reason for suspension
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
