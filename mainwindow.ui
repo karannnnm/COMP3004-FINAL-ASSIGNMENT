@@ -31,7 +31,7 @@
 border: 1px solid black;</string>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="powerOffScreen">
      <widget class="QFrame" name="frame_14">
@@ -547,7 +547,7 @@ border: none;</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>80</y>
+        <y>160</y>
         <width>681</width>
         <height>101</height>
        </rect>
@@ -636,7 +636,7 @@ padding: 5px;</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>230</y>
+        <y>310</y>
         <width>681</width>
         <height>121</height>
        </rect>
@@ -707,7 +707,7 @@ padding: 5px;</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>400</y>
+        <y>480</y>
         <width>681</width>
         <height>61</height>
        </rect>
@@ -774,7 +774,7 @@ padding: 5px;</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>530</y>
+        <y>580</y>
         <width>681</width>
         <height>61</height>
        </rect>
@@ -852,6 +852,51 @@ padding: 5px;</string>
        </property>
        <property name="text">
         <string>Confirm Bolus</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QFrame" name="frame_15">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>70</y>
+        <width>681</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #FFFFFF;       
+border: 1px solid #DDD;         
+border-radius: 8px;
+padding: 5px;</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QLabel" name="bolusType_2">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>10</y>
+         <width>281</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Choose a Profile (if blank default values will be used)</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox">
+       <property name="geometry">
+        <rect>
+         <x>470</x>
+         <y>10</y>
+         <width>151</width>
+         <height>31</height>
+        </rect>
        </property>
       </widget>
      </widget>
