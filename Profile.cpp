@@ -32,6 +32,10 @@ double Profile::getTargetGlucose() const {
 }
 
 // Setters
+void Profile::setName(string name){
+    this->name = name;
+}
+
 void Profile::setBasalRate(double rate) {
     basalRate = rate;
 }
@@ -47,15 +51,11 @@ void Profile::setCarbRatio(double ratio) {
 void Profile::setTargetGlucose(double glucose) {
     targetGlucose = glucose;
 }
-void Profile::setProfileType(string profileType){
-    this->profileType = profileType;
-}
 
 // Display the current profile values
 void Profile::displayProfile() const {
     cout << "Profile:" << endl;
     cout << "Name: " << name << endl;
-    cout<<  "Profile Type: "<<profileType<<endl;
     cout << "Basal Rate: " << basalRate << " units/hour" << endl;
     cout << "Correction Factor: " << correctionFactor << " mg/dL per unit" << endl;
     cout << "Carb Ratio: " << carbRatio << " mg/dL per unit" << endl;

@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "ProfileManager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,7 +18,12 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    ProfileManager *profileManager;
     const QString correctPIN = "1234";  // Hardcoded PIN
+
+    // Helper functions
+    void displayProfileDetails(const Profile &profile);
+    void setDetailsReadOnly(bool readOnly);
 
 private slots:
     void onPowerButtonHeld(); // Called when power button is held
@@ -25,8 +31,15 @@ private slots:
     void onBolusButtonClicked();
     void onHistoryButtonClicked();
     void onLogoButtonClicked();
-    void onOptionsButtonClicked();
     void option1Clicked();
     void option2Clicked();
+
+    void onNewProfileClicked();
+    void onProfileSelected();
+    void onEditProfileClicked();
+    void onSaveProfileClicked();
+    void onDeleteProfileClicked();
+
+
 };
 #endif // MAINWINDOW_H

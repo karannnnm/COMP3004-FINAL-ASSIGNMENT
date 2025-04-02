@@ -21,21 +21,21 @@ public:
     double getTargetGlucose() const;
 
     // Setters
+    void setName(string name);
     void setBasalRate(double rate);
     void setCorrectionFactor(double factor);
     void setCarbRatio(double ratio);
     void setTargetGlucose(double glucose);
-    void setProfileType(string profileType);
+
     // Display Function (for debugging)
     void displayProfile() const;
 
 private:
-    string name;              // User's name
+    string name = "Normal";        // Profile name
     double basalRate;              // Basal insulin rate (units/hour)
     double correctionFactor;       // Correction factor (mg/dL per unit)
     double carbRatio;
     double targetGlucose;
-    string profileType = "Normal";
 };
 
 #endif // PROFILE_H
