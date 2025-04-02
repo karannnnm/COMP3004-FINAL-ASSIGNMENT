@@ -35,7 +35,6 @@ private:
     double correctionFactor;       // Correction factor (mg/dL per unit)
     double carbRatio;
     double targetGlucose;
-    string profileType = "Normal";
 };
 
 #endif // PROFILE_H

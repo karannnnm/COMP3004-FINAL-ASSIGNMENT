@@ -1,21 +1,36 @@
 #include "Profile.h"
 #include "ProfileManager.h"
+#include "BolusCalculator.h"
 #include <iostream>
 using namespace std;
 
 int main() {
 
-    Create a ProfileManager instance
+    // Create a ProfileManager instance
     ProfileManager manager;
-
+    cout<<manager.isEmpty()<<endl;
     // Test Case 1: Add profiles
-    cout << "Adding profiles..." << endl;
-    manager.addProfile(Profile("Morning Routine", 1.0, 2.0, 15.0, 100.0));
+    // cout << "Adding profiles..." << endl;
     manager.addProfile(Profile("Lunch Routine", 1.2, 2.5, 12.0, 110.0));
+    manager.addProfile(Profile("Morning Routine", 1.0, 2.0, 15.0, 100.0));
     manager.addProfile(Profile("Exercise Routine", 0.8, 1.8, 20.0, 90.0));
-    manager.displayAllProfiles();
 
-    // Test Case 2: Retrieve a profile
+    manager.displayAllProfiles();
+    
+
+    cout<<"Testing for bolus  -----------------------------------"<<endl;
+    BolusCalculator bolusTest(manager);
+    bolusTest.getProfileByName("Morning Routine");
+    bolusTest.currentProfile->displayProfile();
+
+    bolusTest.setCurrentGlucoseLevel(2.2);
+    cout<<bolusTest.getCurrentGlucoseLevel();
+
+
+
+    //testing for ProfileManager class
+    /*
+    Test Case 2: Retrieve a profile
     cout << "\nRetrieving 'Lunch Routine' profile..." << endl;
     Profile* lunchProfile = manager.getProfile("Lunch Routine");
     if (lunchProfile) {
@@ -31,7 +46,10 @@ int main() {
     } else {
         cout << "Failed to update profile!" << endl;
     }
+
     manager.displayAllProfiles();
+
+
 
     // Test Case 4: Delete a profile
     cout << "\nDeleting 'Morning Routine' profile..." << endl;
@@ -50,6 +68,7 @@ int main() {
     } else {
         cout << "Profile not found!" << endl;
     }
+    */   
 
     return 0;
 }

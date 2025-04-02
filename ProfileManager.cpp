@@ -39,6 +39,11 @@ bool ProfileManager::deleteProfile(const string& name) {
     return false; // Profile not found
 }
 
+
+bool ProfileManager::isEmpty(){
+    return profiles.empty();
+}
+
 // Display all profiles
 void ProfileManager::displayAllProfiles() const {
     if (profiles.empty()) {
@@ -47,6 +52,6 @@ void ProfileManager::displayAllProfiles() const {
     }
     for (const auto& profile : profiles) {
         profile.displayProfile();
-        cout << "------------------------" << endl;
+        cout << "------------------------" << endl<<endl;
     }
 }
