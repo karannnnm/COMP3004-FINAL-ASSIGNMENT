@@ -1,8 +1,12 @@
+// Devanjali Das, Gurleen Bassali, Karan Modi, Zainab Jahangir
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
 #include "ProfileManager.h"
+#include "logger.h"
+#include "battery.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -13,33 +17,43 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    // Constructor
     MainWindow(QWidget *parent = nullptr);
+    // Destructor
     ~MainWindow();
 
 private:
     Ui::MainWindow *ui;
     ProfileManager *profileManager;
-    const QString correctPIN = "1234";  // Hardcoded PIN
+    const QString correctPIN = "1234";
+    Logger* logger;
+    USBConnection* battery;
 
     // Helper functions
+
+    // Displays the details of the provided profile in the UI
     void displayProfileDetails(const Profile &profile);
+
+    // Sets the read-only state for profile detail fields
     void setDetailsReadOnly(bool readOnly);
 
 private slots:
-    void onPowerButtonHeld(); // Called when power button is held
+    void onPowerButtonHeld();
     void onUnlockButtonClicked();
     void onBolusButtonClicked();
     void onHistoryButtonClicked();
     void onLogoButtonClicked();
     void option1Clicked();
     void option2Clicked();
-
     void onNewProfileClicked();
     void onProfileSelected();
     void onEditProfileClicked();
     void onSaveProfileClicked();
     void onDeleteProfileClicked();
 
-
+    void updateBatteryDisplay();
+    void onChargerButtonClicked();
 };
+
+
 #endif // MAINWINDOW_H
