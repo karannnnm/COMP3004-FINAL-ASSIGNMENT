@@ -32,6 +32,10 @@ double Profile::getTargetGlucose() const {
 }
 
 // Setters
+void Profile::setName(string name){
+    this->name = name;
+}
+
 void Profile::setBasalRate(double rate) {
     basalRate = rate;
 }
