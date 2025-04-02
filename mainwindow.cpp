@@ -159,19 +159,19 @@ void MainWindow::onNewProfileClicked()
         return;
 
     bool ok;
-    double basalRate = QInputDialog::getDouble(this, "New Profile", "Enter basal rate:", 0.0, 0.0, 100.0, 2, &ok);
+    double basalRate = QInputDialog::getDouble(this, "New Profile", "Enter basal rate:", 0.0, 0.0, 10000.0, 2, &ok);
     if (!ok)
         return;
 
-    double correctionFactor = QInputDialog::getDouble(this, "New Profile", "Enter correction factor:", 0.0, 0.0, 100.0, 2, &ok);
+    double correctionFactor = QInputDialog::getDouble(this, "New Profile", "Enter correction factor:", 0.0, 0.0, 10000.0, 2, &ok);
     if (!ok)
         return;
 
-    double carbRatio = QInputDialog::getDouble(this, "New Profile", "Enter carb ratio:", 0.0, 0.0, 100.0, 2, &ok);
+    double carbRatio = QInputDialog::getDouble(this, "New Profile", "Enter carb ratio:", 0.0, 0.0, 10000.0, 2, &ok);
     if (!ok)
         return;
 
-    double targetGlucose = QInputDialog::getDouble(this, "New Profile", "Enter target glucose:", 0.0, 0.0, 100.0, 2, &ok);
+    double targetGlucose = QInputDialog::getDouble(this, "New Profile", "Enter target glucose:", 0.0, 0.0, 10000.0, 2, &ok);
     if (!ok)
         return;
 

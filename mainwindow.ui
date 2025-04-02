@@ -889,7 +889,7 @@ padding: 5px;</string>
         <string>Choose a Profile (if blank default values will be used)</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="comboBox">
+      <widget class="QComboBox" name="profilesComboBox">
        <property name="geometry">
         <rect>
          <x>470</x>
