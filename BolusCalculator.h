@@ -3,6 +3,8 @@
 using namespace std;
 
 #include "ProfileManager.h"
+// #include "ControlIQ.h" // Include the header file for ControlIQ
+#include <vector>
 
 
 /*
@@ -59,60 +61,94 @@ using namespace std;
 class BolusCalculator {
 public:
 
-// - Insulin to carb ratio(ICR)/ carbRatio : fetched from Profile
-// - Correction factor                     : fetched from Profile
-// - target blood glucose                  : fetched from Profile
-
-    // Constructor
-    BolusCalculator(ProfileManager& profileManager);
+// Friend method to allow ControlIQ to access bolus data
+friend std::vector<double> getBolusData(const BolusCalculator& bolusCalculator);
 
 
-    //step 1: load a profile
-    //fetch profile from ProfileManager
-    void getProfileByName(const std::string& profileName);
+// Constructor
+BolusCalculator(ProfileManager& profileManager);
 
 
-    //step 2: fetch variables for bolus calculation 
-        // 2.1 setters and getters for manual inputs for calculation
-        void setCurrentGlucoseLevel(double level);
-        void setTotalCarbs(double totalCarbs);
-        double getCurrentGlucoseLevel();
-        double getTotalCarbs();
-        double getIOB();
+//done
+//step 1: load a profile
+//fetch profile from ProfileManager and save it in currentProfile
+void getProfileByName(const std::string& profileName);
+Profile* currentProfile;
 
-        // 2.2 variables coming from Profile are saved in the
-        //  fetchedVarName variable private field which are set when profile is loaded 
 
+
+
+//done
+//step 2: fetch variables for bolus calculation 
+// 2.1 setters and getters for manual inputs for calculation
+void setCurrentGlucoseLevel(double level);
+void setTotalCarbs(double totalCarbs);
+double getCurrentGlucoseLevel();
+double getTotalCarbs();
+double getIOB();
+
+// 2.2 variables coming from Profile are saved in the
+//  fetchedVarName variable private field which are set when profile is loaded 
+//for debugging
+void printStep2();
+
+//this is to check if we have all variables ready for the bolus calculation i.e step 3
+bool areInputsValid() const;
 
 
     
-    // step 3: Perform bolus calculation
-    // Calculate bolus dose based on manual input
-    double calculateBolus(double currentGlucose, double carbIntake, double insulinOnBoard, const std::string& profileName);
+
+
+
+
+// step 3: Perform bolus calculation
+//DONE!!
+    // 3.1
+        // Calculate bolus dose based on manual input
+        // need these variables for the calculation ICR, targetBloodGlucose, correctionFactor, currentBloodGlucose, totalCarbs, IOB.
+        double calculateBolus(); 
+    
+
+        //3.2
+        //calculate how much bolus user needs immediately.
+        void setPercentOfImmediateDose(double percent);
+        void calculateImmediateBolusDose();
+    
+        //3.3
+        //calculate how much bolus is left for extended delivery.
+        void setDurationForExtendedBolus(int hours);
         
+        //TO DO: 
+        void setPercentOfExtendedDose(double percent);
+        // Handles extended bolus (delayed insulin delivery)
+        void calculateExtendedBolusDose();
+
+        //for debugging
+        void printStep3();
+    
     
     
     
     // Allows user to override suggested bolus
+    //allow user to ovveride the totalBolusAfterIOB.
+    // for the immediateDose and extendedDose, use same duration and percent, but calculate dose based on overriden dose.
     void overrideBolus(double newDose);
 
-    // Handles extended bolus (delayed insulin delivery)
-    void setExtendedBolus(double percentageImmediate, double durationHours);
 
     // Cancels ongoing bolus
     void cancelBolus();
+    // Sends bolus data to ControlIQ system
+    // void sendBolusDataToControlIQ(ControlIQ& controlIQ);
+    
 
-    Profile* currentProfile;
-
-
-
-private:
+    private:
     ProfileManager& profileManager;  // Reference to access user settings
     
     // input variables for bolus calc that user will manually enter
     double currentBloodGlucoseLevel;
     double totalCarbs;
     
+    //random IOB
     double IOB = 5.0;
     
     //inputs variables for bolus calc coming from Profile
@@ -120,10 +156,17 @@ private:
     double fetchedCorrectionFactor;
     double fetchedTargetBloodGlucoseLevel;
 
+
+    double percentOfImmediateDose;
+    double percentOfExtendedDose;
+    double durationOfExtendedBolus;
+
     //outputs
+    double totalBolusAfterIOB;
     double immediateDose;
-    double suggestedDose = 0.0;      // Stores calculated dose
-    bool extendedBolusActive = false;
+    double extendedDose;
+    double extendedDosePerHour;
+
 };
 
 #endif // BOLUS_CALCULATOR_H
