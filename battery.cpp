@@ -73,6 +73,8 @@ void USBConnection::updateBatteryLevel() {
         if (batteryLevel >= 100) {
             qDebug() << "Battery fully charged. Stopping charging process.";
             stopCharging();
+            emit batteryFullyCharged();
+
             // Automatically restart battery drain simulation after fully charged
             QTimer::singleShot(1000, this, [this]() {
                 simulateBatteryDrain();

@@ -35,9 +35,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(batteryTimer, &QTimer::timeout, this, &MainWindow::updateBatteryDisplay);
     batteryTimer->start(1000);
 
-    // Connect the chargerButton's released signal to onChargerButtonClicked()
-    connect(ui->chargerButton, SIGNAL(released()), this, SLOT(onChargerButtonClicked()));
-
     // Set up the CGM chart
     QLineSeries *series = new QLineSeries();
     series->append(0, 3.4);
@@ -95,6 +92,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->editProfileButton, SIGNAL(released()), this, SLOT(onEditProfileClicked()));
     connect(ui->saveProfileButton, SIGNAL(released()), this, SLOT(onSaveProfileClicked()));
     connect(ui->deleteProfileButton, SIGNAL(released()), this, SLOT(onDeleteProfileClicked()));
+
+    connect(ui->chargerButton, SIGNAL(released()), this, SLOT(onChargerButtonClicked()));
+    connect(battery, SIGNAL(batteryFullyCharged()), this, SLOT(onBatteryFullyCharged()));
+
 }
 
 // Destructor
@@ -135,8 +136,13 @@ void MainWindow::updateBatteryDisplay()
 // Called when the chargerButton is clicked; initiates the charger connection.
 void MainWindow::onChargerButtonClicked()
 {
+    ui->chargerButton->setEnabled(false);
     logger->logEvent("Charger button clicked. Initiating charger connection.");
     battery->connectCharger();
+}
+
+void MainWindow::onBatteryFullyCharged() {
+    ui->chargerButton->setEnabled(true);
 }
 
 // Called when the power button is held to transition from power off screen

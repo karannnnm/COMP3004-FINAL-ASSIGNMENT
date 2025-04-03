@@ -35,6 +35,10 @@ public:
     // Checks if battery level is below 60% and, if it isnt charging, prompts for charger connection
     void checkAndPromptForCharger();
 
+signals:
+    void batteryFullyCharged();
+
+
 private slots:
     // Called periodically by chargingTimer to increase battery level
     void updateBatteryLevel();

@@ -53,6 +53,7 @@ private slots:
 
     void updateBatteryDisplay();
     void onChargerButtonClicked();
+    void onBatteryFullyCharged();
 };
 
 
