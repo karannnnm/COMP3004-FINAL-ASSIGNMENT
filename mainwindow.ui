@@ -31,7 +31,7 @@
 border: 1px solid black;</string>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="powerOffScreen">
      <widget class="QFrame" name="frame_14">
@@ -1388,6 +1388,19 @@ font-size: 30px;
     </property>
     <property name="text">
      <string>T</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="chargerButton">
+    <property name="geometry">
+     <rect>
+      <x>1020</x>
+      <y>390</y>
+      <width>83</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Charger</string>
     </property>
    </widget>
   </widget>

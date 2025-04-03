@@ -57,4 +57,3 @@ double BolusCalculator::getTotalCarbs(){
 double BolusCalculator::getIOB(){
     return this->IOB;
 }
-
