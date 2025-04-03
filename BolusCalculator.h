@@ -10,32 +10,32 @@ using namespace std;
 /*
     BOLUS CALCULATION:
 
-        {Input Parameters: 
+        {Input Parameters:
             - Insulin to carb ratio(ICR)/ carbRatio : fetched from Profile
             - Correction factor                     : fetched from Profile
             - target blood glucose                  : fetched from Profile
             - current blood glucose (mmol/L)        : let user input manually now
-            - insulin on board:                     : use default of 5units 
+            - insulin on board:                     : use default of 5units
             - total carbs                           : let user input manually now
         }
 
 
         2.1; Food Bolus = carb bolus = total carbs/ICR
-                for a meal of 50g carbs = carb bolus = 50/1 = 50 units. 
+                for a meal of 50g carbs = carb bolus = 50/1 = 50 units.
 
-        
+
         2.2: Correction bolus = bolus = (current blood glucos(bg) - target gb)/correction factor
                 For a target blood glucose of 5 mmol/L and a current BG of 7 mmol/L:
                     correction bolus = 7-5/1 = 2units
-        
+
         2.3: Total required bolus = total bolus = carb bolus + correction bolus
                                 = 50+2 = 52 units
 
         2.4: Adjustment for IOB = Final bolus = total bolus - IOB
                                               = 52-5 = 47 units
 
-        
-        3: Bolus distribution over 3 hours: 
+
+        3: Bolus distribution over 3 hours:
 
             3.1: Immediate Bolus (60%) = Immediate bolus = 0.6 * final bolus
                                                         = 0.6 * 47 = 28.2 units
@@ -143,14 +143,12 @@ bool areInputsValid() const;
 
     private:
     ProfileManager& profileManager;  // Reference to access user settings
-    
+
     // input variables for bolus calc that user will manually enter
     double currentBloodGlucoseLevel;
     double totalCarbs;
-    
-    //random IOB
     double IOB = 5.0;
-    
+
     //inputs variables for bolus calc coming from Profile
     double fetchedICR;
     double fetchedCorrectionFactor;
