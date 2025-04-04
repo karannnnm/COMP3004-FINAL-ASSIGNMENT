@@ -55,3 +55,7 @@ void ProfileManager::displayAllProfiles() const {
         cout << "------------------------" << endl<<endl;
     }
 }
+
+std::vector<Profile>& ProfileManager::getProfiles() {
+    return profiles;
+}

@@ -139,6 +139,10 @@ bool areInputsValid() const;
     void cancelBolus();
     // Sends bolus data to ControlIQ system
     // void sendBolusDataToControlIQ(ControlIQ& controlIQ);
+
+    double getTotalBolusAfterIOB();
+    double getImmediateDose();
+    double getExtendedDosePerHour();
     
 
     private:

@@ -7,6 +7,8 @@
 #include "ProfileManager.h"
 #include "logger.h"
 #include "battery.h"
+#include "BolusCalculator.h"
+#include "BolusCalculator.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,6 +27,7 @@ public:
 private:
     Ui::MainWindow *ui;
     ProfileManager *profileManager;
+    BolusCalculator *bolusCalc;
     const QString correctPIN = "1234";
     Logger* logger;
     USBConnection* battery;
@@ -36,6 +39,9 @@ private:
 
     // Sets the read-only state for profile detail fields
     void setDetailsReadOnly(bool readOnly);
+
+    void updateProfileComboBox();
+
 
 private slots:
     void onPowerButtonHeld();
@@ -54,6 +60,9 @@ private slots:
     void updateBatteryDisplay();
     void onChargerButtonClicked();
     void onBatteryFullyCharged();
+
+    void onCalculateDoseButtonClicked();
+    void onConfirmBolusButtonClicked();
 };
 
 
