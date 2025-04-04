@@ -3,7 +3,7 @@
 using namespace std;
 
 #include "ProfileManager.h"
-// #include "ControlIQ.h" // Include the header file for ControlIQ
+#include "ControlIQ.h" // Include the header file for ControlIQ
 #include <vector>
 
 
@@ -63,6 +63,7 @@ public:
 
 // Friend method to allow ControlIQ to access bolus data
 friend std::vector<double> getBolusData(const BolusCalculator& bolusCalculator);
+friend Profile* getCurrentProfile(const BolusCalculator& bolusCalculator);
 
 
 // Constructor
@@ -73,7 +74,7 @@ BolusCalculator(ProfileManager& profileManager);
 //step 1: load a profile
 //fetch profile from ProfileManager and save it in currentProfile
 void getProfileByName(const std::string& profileName);
-Profile* currentProfile;
+Profile* currentProfile = nullptr;
 
 
 

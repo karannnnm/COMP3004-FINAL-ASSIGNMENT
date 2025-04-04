@@ -1,8 +1,8 @@
 
 all: test
 
-test: test.o Profile.o ProfileManager.o BolusCalculator.o
-	g++ -o test test.o Profile.o ProfileManager.o BolusCalculator.o
+test: test.o Profile.o ProfileManager.o BolusCalculator.o ControlIQ.o
+	g++ -o test test.o Profile.o ProfileManager.o BolusCalculator.o ControlIQ.o
 
 test.o: test.cpp Profile.h ProfileManager.h BolusCalculator.h
 	g++ -c test.cpp
@@ -16,5 +16,7 @@ ProfileManager.o: ProfileManager.cpp ProfileManager.h Profile.h
 BolusCalculator.o: BolusCalculator.cpp BolusCalculator.h ProfileManager.h
 	g++ -c BolusCalculator.cpp
 
+ControlIQ.o: ControlIQ.cpp ControlIQ.h BolusCalculator.h
+	gcc -c ControlIQ.cpp
 clean:
 	rm -f test *.o

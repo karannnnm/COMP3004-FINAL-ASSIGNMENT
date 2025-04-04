@@ -1,24 +1,72 @@
 #include "Profile.h"
 #include "ProfileManager.h"
 #include "BolusCalculator.h"
+#include "ControlIQ.h"
 #include <iostream>
 using namespace std;
 
 int main() {
 
     // Create a ProfileManager instance
-    ProfileManager manager;
-
+    
     // Test Case 1: Add profiles
     // cout << "Adding profiles..." << endl;
     // Profile::Profile(const std::string &name, double basalRate, double correctionFactor, double carbRatio, double targetGlucose)
+    ProfileManager manager;
     manager.addProfile(Profile("Lunch Routine", 1.2, 2.5, 2, 7.9));
     manager.addProfile(Profile("Morning Routine", 1.0, 2.0, 15.0, 100.0));
     manager.addProfile(Profile("Exercise Routine", 0.8, 1.8, 20.0, 90.0));
     manager.addProfile(Profile("Bolus Test",2,1,1,5));
+    manager.addProfile(Profile("ControlIQ test",2,1,1,5));
 
-    // manager.displayAllProfiles();
+    manager.displayAllProfiles();
+
+
+
+    //testing for ControlIQ class
+    BolusCalculator bolus(manager);
+    bolus.getProfileByName("ControlIQ test");
+    bolus.currentProfile->displayProfile();
+    bolus.currentProfile->setCarbRatio(2);
+    cout<<"after changing carb ratio<>>>>"<<endl;
+    manager.displayAllProfiles();
+
+
+    bolus.setCurrentGlucoseLevel(6.5);
+    bolus.setTotalCarbs(50);
+    bolus.calculateBolus();
+
+    bolus.setPercentOfImmediateDose(50);
+    bolus.calculateImmediateBolusDose();
+
+    bolus.setPercentOfExtendedDose(50);
+    bolus.setDurationForExtendedBolus(4);
+    bolus.calculateExtendedBolusDose();
     
+    
+    // ControlIQ controlIQ;
+    // controlIQ.fetchBolusData(bolus);
+    // controlIQ.fetchCurrentProfile(bolus);
+    // controlIQ.displayBolusData();
+    // cout<<"---"<<endl;
+    // cout<<controlIQ.getCurrentBloodGlucose()<<endl;
+    // cout<<"---"<<endl;
+    // controlIQ.displayBolusData();
+
+    // bolus.printStep2();
+
+    
+    // controlIQ.displayProfileData();
+    //to check whether whether controlIQ is pointing to the same profile as bolus
+    // cout<<bolus.currentProfile<<endl;
+    // cout<<controlIQ.currentProfile<<endl;
+
+
+
+
+
+    // Testing for BolusCalculator class
+    /*
 
     BolusCalculator bolusTest(manager);
     bolusTest.getProfileByName("Lunch Routine");
@@ -48,6 +96,8 @@ int main() {
 
     bolusTest.cancelBolus();
     bolusTest.printStep3();
+    */
+
 
     //testing for ProfileManager class
     /*
