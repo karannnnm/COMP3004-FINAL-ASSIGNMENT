@@ -205,7 +205,7 @@ void BolusCalculator::printStep3(){
     cout<<"- Details about the extended dose : "<<endl<<endl;
     cout<<"     Percent of extended Dose = "<<percentOfExtendedDose<<endl;
     cout<<"     Duration of extended bolus =  "<<durationOfExtendedBolus<<endl;
-    cout<<"     Immediate bolus dose over "<<durationOfExtendedBolus<<" hours = "<<extendedDose<<endl;
+    cout<<"     Extended bolus dose over "<<durationOfExtendedBolus<<" hours = "<<extendedDose<<endl;
     cout<<"     Amount of bolus delivered per hour = "<<extendedDosePerHour<<endl;
     
 }
@@ -216,7 +216,8 @@ std::vector<double> getBolusData(const BolusCalculator& bolusCalculator) {
         bolusCalculator.immediateDose,
         bolusCalculator.extendedDose,
         bolusCalculator.extendedDosePerHour,
-        bolusCalculator.durationOfExtendedBolus
+        bolusCalculator.durationOfExtendedBolus,
+        bolusCalculator.currentBloodGlucoseLevel
     };
 }
 
@@ -235,3 +236,7 @@ double BolusCalculator::getExtendedDosePerHour()
 {
     return extendedDosePerHour;
 }
+
+Profile* getCurrentProfile(const BolusCalculator& bolusCalculator){
+    return bolusCalculator.currentProfile;
+};
