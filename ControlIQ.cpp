@@ -13,8 +13,13 @@ void ControlIQ::fetchBolusData(const BolusCalculator& bolusCalculator) {
     extendedDose = bolusData[1];
     extendedDosePerHour = bolusData[2];
     durationOfExtendedBolus =bolusData[3];
-    currentBloodGlucoseLevel = bolusData[4];
+    // currentBloodGlucoseLevel = &bolusData[4];
 }
+
+void ControlIQ::linkCurrentBloodGlucoseLevel(BolusCalculator& bolusCalculator){
+    this->currentBloodGlucoseLevel = &(bolusCalculator.getCurrentGlucoseLevelToLink());
+}
+
 
 void ControlIQ::fetchCurrentProfile(const BolusCalculator& bolusCalculator){
 
@@ -39,8 +44,11 @@ void ControlIQ::displayProfileData() const{
 
 double ControlIQ::getCurrentBloodGlucose(){
     
-    this->currentBloodGlucoseLevel--;
-    return this->currentBloodGlucoseLevel;
+    return *(this->currentBloodGlucoseLevel);
+}
+
+void ControlIQ::adjustCurrentBloodGlucose(){
+    *currentBloodGlucoseLevel -= 1;
 }
 
 
@@ -51,5 +59,9 @@ void ControlIQ::displayBolusData() const {
     cout << "Extended Dose: " << extendedDose << " units" << endl;
     cout << "Extended Dose Per Hour: " << extendedDosePerHour << " units/hour" << endl;
     cout << "Duration of Extended Bolus: " << durationOfExtendedBolus << " hours" << endl;
-    cout<<"Current blood glucsoe level = "<<currentBloodGlucoseLevel<<" mmol/L" <<endl<<endl;
+    if (currentBloodGlucoseLevel) {
+        cout << "Current blood glucose level = " << *currentBloodGlucoseLevel << " mmol/L" << endl << endl;
+    } else {
+        cout << "Current blood glucose level is not linked!" << endl << endl;
+    }
 }

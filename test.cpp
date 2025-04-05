@@ -19,18 +19,13 @@ int main() {
     manager.addProfile(Profile("Bolus Test",2,1,1,5));
     manager.addProfile(Profile("ControlIQ test",2,1,1,5));
 
-    manager.displayAllProfiles();
+    // manager.displayAllProfiles();
 
 
 
     //testing for ControlIQ class
     BolusCalculator bolus(manager);
     bolus.getProfileByName("ControlIQ test");
-    bolus.currentProfile->displayProfile();
-    bolus.currentProfile->setCarbRatio(2);
-    cout<<"after changing carb ratio<>>>>"<<endl;
-    manager.displayAllProfiles();
-
 
     bolus.setCurrentGlucoseLevel(6.5);
     bolus.setTotalCarbs(50);
@@ -42,24 +37,19 @@ int main() {
     bolus.setPercentOfExtendedDose(50);
     bolus.setDurationForExtendedBolus(4);
     bolus.calculateExtendedBolusDose();
-    
-    
-    // ControlIQ controlIQ;
-    // controlIQ.fetchBolusData(bolus);
-    // controlIQ.fetchCurrentProfile(bolus);
-    // controlIQ.displayBolusData();
-    // cout<<"---"<<endl;
-    // cout<<controlIQ.getCurrentBloodGlucose()<<endl;
-    // cout<<"---"<<endl;
-    // controlIQ.displayBolusData();
 
-    // bolus.printStep2();
-
+    // cout<<bolus.getCurrentGlucoseLevel()<<endl;    
     
-    // controlIQ.displayProfileData();
-    //to check whether whether controlIQ is pointing to the same profile as bolus
-    // cout<<bolus.currentProfile<<endl;
-    // cout<<controlIQ.currentProfile<<endl;
+    
+    ControlIQ controlIQ;
+    controlIQ.fetchBolusData(bolus);
+    controlIQ.fetchCurrentProfile(bolus);
+    controlIQ.currentProfile->setBasalRate(2.5);
+    controlIQ.linkCurrentBloodGlucoseLevel(bolus);
+    controlIQ.displayBolusData();
+    controlIQ.adjustCurrentBloodGlucose();
+    controlIQ.displayBolusData();
+    cout<<bolus.getCurrentGlucoseLevel()<<endl;
 
 
 

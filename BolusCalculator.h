@@ -84,21 +84,17 @@ Profile* currentProfile = nullptr;
 // 2.1 setters and getters for manual inputs for calculation
 void setCurrentGlucoseLevel(double level);
 void setTotalCarbs(double totalCarbs);
-double getCurrentGlucoseLevel();
+double getCurrentGlucoseLevel() const;
+double& getCurrentGlucoseLevelToLink();
 double getTotalCarbs();
 double getIOB();
-
 // 2.2 variables coming from Profile are saved in the
 //  fetchedVarName variable private field which are set when profile is loaded 
 //for debugging
 void printStep2();
-
 //this is to check if we have all variables ready for the bolus calculation i.e step 3
 bool areInputsValid() const;
-
-
     
-
 
 
 

@@ -30,6 +30,7 @@ public:
 
     //step1.
     void fetchBolusData(const BolusCalculator& bolusCalculator);
+    void linkCurrentBloodGlucoseLevel(BolusCalculator& bolusCalculator);
     void fetchCurrentProfile(const BolusCalculator& bolusCalculator);
 
 
@@ -45,6 +46,7 @@ public:
     // Method to display the received bolus data (for debugging)
     void displayBolusData() const;
     void displayProfileData() const;
+    void adjustCurrentBloodGlucose();
 
 
 private:
@@ -52,7 +54,7 @@ private:
     double extendedDose = 0.0;
     double extendedDosePerHour = 0.0;
     double durationOfExtendedBolus = 0;
-    double currentBloodGlucoseLevel;
+    double* currentBloodGlucoseLevel;
 };
 
 #endif // CONTROL_IQ_H
