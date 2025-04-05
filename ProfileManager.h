@@ -21,13 +21,13 @@ public:
     // Delete a profile by name
     bool deleteProfile(const string& name);
 
-
-
     //returns true if list is empty
     bool isEmpty();
     
     // Display all profiles
     void displayAllProfiles() const;
+
+    std::vector<Profile>& getProfiles();
 
 
 private:
