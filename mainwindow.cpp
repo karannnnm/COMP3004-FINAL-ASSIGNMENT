@@ -17,9 +17,14 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , profileManager(new ProfileManager)
+    , bolusCalc(nullptr)
 {
     ui->setupUi(this);
     ui->stackedWidget->setCurrentIndex(0);  // Default page: power off screen
+
+    // Instantiate BolusCalculator and pass in the existing ProfileManager reference
+    bolusCalc = new BolusCalculator(*profileManager);
+
 
     // Initialize logger with the log widget from the UI
     logger = new Logger(ui->log);
@@ -95,6 +100,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->chargerButton, SIGNAL(released()), this, SLOT(onChargerButtonClicked()));
     connect(battery, SIGNAL(batteryFullyCharged()), this, SLOT(onBatteryFullyCharged()));
+
+    connect(ui->calculateDoseButton, SIGNAL(released()), this, SLOT(onCalculateDoseButtonClicked()));
+    connect(ui->confirmBolusButton, SIGNAL(released()), this, SLOT(onConfirmBolusButtonClicked()));
 
 }
 
@@ -248,6 +256,9 @@ void MainWindow::onNewProfileClicked()
     // Add the new profile to the list widget
     QListWidgetItem *item = new QListWidgetItem(name, ui->profileList);
     item->setData(Qt::UserRole, name);
+
+    // Update the bolus calculator combo box
+    updateProfileComboBox();
 }
 
 // Called when a profile is selected from the list; displays its details
@@ -322,6 +333,99 @@ void MainWindow::onDeleteProfileClicked()
             ui->carbRatioValue->clear();
             ui->correctionValue->clear();
             ui->targetGlucoseValue->clear();
+
+            // Update the bolus calculator combo box if profile deleted
+            updateProfileComboBox();
         }
     }
+}
+
+
+void MainWindow::updateProfileComboBox() {
+    ui->profilesComboBox->clear();
+    const auto& profiles = profileManager->getProfiles();
+    for (const auto &profile : profiles) {
+        ui->profilesComboBox->addItem(QString::fromStdString(profile.getName()));
+    }
+}
+
+void MainWindow::onCalculateDoseButtonClicked()
+{
+    // 1) Get the profile name from the QComboBox
+    QString selectedProfile = ui->profilesComboBox->currentText();
+
+    // 2) Tell BolusCalculator to load that profile
+    bolusCalc->getProfileByName(selectedProfile.toStdString());
+
+    // 3) Retrieve user input for current BG and carbs
+    double currentBG = ui->bloodGlucoseLevelValue->value();
+    double totalCarbs = ui->carbohydratesValue->value();
+
+    // 4) Pass these inputs to BolusCalculator
+    bolusCalc->setCurrentGlucoseLevel(currentBG);
+    bolusCalc->setTotalCarbs(totalCarbs);
+
+    // 5) Perform the calculation
+    double suggestedDose = bolusCalc->calculateBolus();
+
+    // 6) Display the result in the “Suggested Dose” label/line edit
+    ui->suggestedDoseValue->setText(QString::number(suggestedDose));
+    ui->overrideDoseValue->setEnabled(true);
+    ui->quickBolusPercent->setEnabled(true);
+    ui->extendedBolusPercent->setEnabled(true);
+    ui->extendedBolusHours->setEnabled(true);
+}
+
+void MainWindow::onConfirmBolusButtonClicked()
+{
+    // Check if the suggested dose field is empty
+    if (ui->suggestedDoseValue->text().isEmpty()) {
+        QMessageBox::warning(this, "Error", "No suggested dose calculated. Please calculate the dose first.");
+        return;
+    }
+
+    // Get the percentage values from the spin boxes.
+    int immediatePercent = ui->quickBolusPercent->value();
+    int extendedPercent = ui->extendedBolusPercent->value();
+    int duration = ui->extendedBolusHours->value();
+
+    // Check that the percentages add up to 100.
+    if (immediatePercent + extendedPercent != 100) {
+        QMessageBox::warning(this, "Invalid Input",
+                             "The sum of the immediate and extended percentages must equal 100.");
+        return;
+    }
+
+    // Check if the override dose field is filled.
+    double overrideDose = ui->overrideDoseValue->value();
+    if (overrideDose > 0) {
+        bolusCalc->setPercentOfImmediateDose(immediatePercent);
+        bolusCalc->setDurationForExtendedBolus(duration);
+        bolusCalc->setPercentOfExtendedDose(extendedPercent);
+
+        bolusCalc->overrideBolus(overrideDose);
+    }
+    else {
+        // Update the BolusCalculator with these values.
+        bolusCalc->setPercentOfImmediateDose(immediatePercent);
+        bolusCalc->calculateImmediateBolusDose();
+
+        bolusCalc->setDurationForExtendedBolus(duration);
+        bolusCalc->setPercentOfExtendedDose(extendedPercent);
+        bolusCalc->calculateExtendedBolusDose();
+    }
+
+    // Format the results string.
+    QString result;
+    result += QString("Immediate Insulin Dose: %1 units at meal time\n")
+                  .arg(bolusCalc->getImmediateDose(), 0, 'f', 1);
+    result += QString("Extended Insulin Delivery: %1 units per hour for %2 hours\n")
+                  .arg(bolusCalc->getExtendedDosePerHour(), 0, 'f', 2)
+                  .arg(duration);
+    result += QString("Total Insulin Administered: %1 units")
+                  .arg(bolusCalc->getTotalBolusAfterIOB(), 0, 'f', 0);
+
+    // Display the results in an information popup.
+    QMessageBox::information(this, "Bolus Calculation", result);
+
 }

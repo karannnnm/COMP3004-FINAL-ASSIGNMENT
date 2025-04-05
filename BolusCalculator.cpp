@@ -219,3 +219,19 @@ std::vector<double> getBolusData(const BolusCalculator& bolusCalculator) {
         bolusCalculator.durationOfExtendedBolus
     };
 }
+
+
+double BolusCalculator::getTotalBolusAfterIOB()
+{
+    return totalBolusAfterIOB;
+}
+
+double BolusCalculator::getImmediateDose()
+{
+    return immediateDose;
+}
+
+double BolusCalculator::getExtendedDosePerHour()
+{
+    return extendedDosePerHour;
+}
