@@ -1,3 +1,5 @@
+// Devanjali Das, Gurleen Bassali, Karan Modi, Zainab Jahangir
+
 #ifndef PROFILE_MANAGER_H
 #define PROFILE_MANAGER_H
 

@@ -1481,7 +1481,7 @@ font-size: 30px;
      </rect>
     </property>
     <property name="text">
-     <string>Charger</string>
+     <string>CHARGE</string>
     </property>
    </widget>
   </widget>
