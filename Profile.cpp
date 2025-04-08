@@ -1,3 +1,5 @@
+// Devanjali Das, Gurleen Bassali, Karan Modi, Zainab Jahangir
+
 #include "Profile.h"
 #include <iostream>
 using namespace std;

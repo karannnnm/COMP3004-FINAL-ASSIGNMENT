@@ -1,3 +1,4 @@
+// Devanjali Das, Gurleen Bassali, Karan Modi, Zainab Jahangir
 #include "ControlIQ.h"
 #include <iostream>
 #include "BolusCalculator.h"
@@ -25,8 +26,8 @@ void ControlIQ::fetchCurrentProfile(const BolusCalculator& bolusCalculator){
     }else{
         cout<<"Couldnt load profile from the Bolus class"<<endl;
     }
-    
-    
+
+
 }
 
 void ControlIQ::displayProfileData() const{
@@ -38,7 +39,7 @@ void ControlIQ::displayProfileData() const{
 }
 
 double ControlIQ::getCurrentBloodGlucose(){
-    
+
     this->currentBloodGlucoseLevel--;
     return this->currentBloodGlucoseLevel;
 }

@@ -1,3 +1,5 @@
+// Devanjali Das, Gurleen Bassali, Karan Modi, Zainab Jahangir
+
 #ifndef CONTROL_IQ_H
 #define CONTROL_IQ_H
 
@@ -34,14 +36,14 @@ public:
 
 
     Profile* currentProfile = nullptr;
-    
-    
-    
+
+
+
     double getCurrentBloodGlucose();
-    
-    
-    
-    
+
+
+
+
     // Method to display the received bolus data (for debugging)
     void displayBolusData() const;
     void displayProfileData() const;

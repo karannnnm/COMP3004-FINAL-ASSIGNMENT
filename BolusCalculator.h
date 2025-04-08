@@ -1,3 +1,5 @@
+// Devanjali Das, Gurleen Bassali, Karan Modi, Zainab Jahangir
+
 #ifndef BOLUS_CALCULATOR_H
 #define BOLUS_CALCULATOR_H
 using namespace std;
