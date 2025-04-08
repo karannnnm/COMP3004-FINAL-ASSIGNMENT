@@ -1,5 +1,4 @@
-// Devanjali Das, Gurleen Bassalli, Karan Modi, Zainab Jahangir
-
+// Devanjali Das, Gurleen Bassali, Karan Modi, Zainab Jahangir
 #include "ControlIQ.h"
 #include <iostream>
 #include "BolusCalculator.h"
