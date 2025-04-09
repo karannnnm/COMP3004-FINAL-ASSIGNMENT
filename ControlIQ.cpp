@@ -207,7 +207,7 @@ void ControlIQ::deliverBasal(double insulinAmount){
 }
 
 
-void ControlIQ::moniterGlucoseLevel() {
+void ControlIQ::monitorGlucoseLevel() {
     double bg = *currentBloodGlucoseLevel;
     double baseRate = currentProfile->getBasalRate();   // units/hour
     double insulinPerInterval = baseRate / 120.0;      // For 30-second intervals (120 intervals per hour)
