@@ -59,7 +59,7 @@ class ControlIQ {
 public:
     // Method to fetch bolus data from BolusCalculator
     ControlIQ();
-    Profile* currentProfile = nullptr;
+    // Profile* currentProfile = nullptr;
 
     void mimicGlucoseSpike();
 
@@ -95,7 +95,7 @@ public:
 
 
 
-    double getCurrentBloodGlucose();
+    // double getCurrentBloodGlucose();
 
 
 
