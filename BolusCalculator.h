@@ -144,7 +144,7 @@ bool areInputsValid() const;
 
     private:
     ProfileManager& profileManager;  // Reference to access user settings
-
+    
     // input variables for bolus calc that user will manually enter
     double currentBloodGlucoseLevel;
     double totalCarbs;
