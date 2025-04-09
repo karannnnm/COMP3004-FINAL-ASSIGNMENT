@@ -1,3 +1,4 @@
+// Devanjali Das, Gurleen Bassali, Karan Modi, Zainab Jahangir
 #include "ControlIQ.h"
 #include <iostream>
 #include "BolusCalculator.h"
@@ -232,6 +233,10 @@ void ControlIQ::moniterGlucoseLevel() {
         cout << "BG high - Increasing basal rate by 25%" << endl;
         deliverBasal(insulinPerInterval * 1.25);
     }
+double ControlIQ::getCurrentBloodGlucose(){
+
+    this->currentBloodGlucoseLevel--;
+    return this->currentBloodGlucoseLevel;
 }
 
 

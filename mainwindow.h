@@ -4,6 +4,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QDialog> // added include for QDialog
 #include "ProfileManager.h"
 #include "logger.h"
 #include "battery.h"
@@ -30,7 +31,10 @@ private:
     BolusCalculator *bolusCalc;
     const QString correctPIN = "1234";
     Logger* logger;
+    bool chargingInProgress = false;
+
     USBConnection* battery;
+    QDialog *batteryPopup = nullptr; // added member variable
 
     // Helper functions
 
@@ -42,6 +46,7 @@ private:
 
     void updateProfileComboBox();
 
+    void showChargerPopup();
 
 private slots:
     void onPowerButtonHeld();
@@ -63,7 +68,9 @@ private slots:
 
     void onCalculateDoseButtonClicked();
     void onConfirmBolusButtonClicked();
-};
 
+    void checkBatteryAfterDelay();
+
+};
 
 #endif // MAINWINDOW_H

@@ -9,7 +9,9 @@ QT_CHARTS_USE_NAMESPACE
 #include <QtCharts/QValueAxis>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QVBoxLayout>
 #include <QTimer>
+#include <QDebug> // Added for outputting to application output
 QT_CHARTS_USE_NAMESPACE
 
 // Constructor
@@ -18,13 +20,13 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , profileManager(new ProfileManager)
     , bolusCalc(nullptr)
+    , batteryPopup(nullptr)
 {
     ui->setupUi(this);
     ui->stackedWidget->setCurrentIndex(0);  // Default page: power off screen
 
     // Instantiate BolusCalculator and pass in the existing ProfileManager reference
     bolusCalc = new BolusCalculator(*profileManager);
-
 
     // Initialize logger with the log widget from the UI
     logger = new Logger(ui->log);
@@ -103,7 +105,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->calculateDoseButton, SIGNAL(released()), this, SLOT(onCalculateDoseButtonClicked()));
     connect(ui->confirmBolusButton, SIGNAL(released()), this, SLOT(onConfirmBolusButtonClicked()));
-
 }
 
 // Destructor
@@ -114,17 +115,23 @@ MainWindow::~MainWindow()
     delete logger;
 }
 
-// Updates the batteryValue label with the current battery level.
+// Updates the batteryValue label with the current battery level
 void MainWindow::updateBatteryDisplay()
 {
     int level = battery->getBatteryLevel();
     ui->batteryValue->setText(QString("%1%").arg(level));
+
+    if (level == 0)
+    {
+        QTimer::singleShot(1000, this, SLOT(checkBatteryAfterDelay()));
+    }
 
     // Low battery warning
     static bool warningShown = false;
     if (level < 20 && !warningShown) {
         warningShown = true;
         logger->logEvent("Battery is below 20%. Please charge.");
+        qDebug() << "Battery is below 20%. Please charge.";
         QMessageBox::warning(this, "Low Battery", "Battery is below 20%. Please charge.");
     } else if (level >= 20) {
         warningShown = false;
@@ -134,23 +141,44 @@ void MainWindow::updateBatteryDisplay()
     static bool batteryFullLogged = false;
     if (level == 100 && !batteryFullLogged) {
         logger->logEvent("Battery fully charged. Charging stopped. Battery drain simulation resumed.");
+        qDebug() << "Battery fully charged. Charging stopped. Battery drain simulation resumed.";
         batteryFullLogged = true;
     } else if (level < 100) {
-        // If battery goes below 100, allow the message to log again next time it hits 100
         batteryFullLogged = false;
     }
 }
 
-// Called when the chargerButton is clicked; initiates the charger connection.
+// New slot: checks battery level after a delay
+void MainWindow::checkBatteryAfterDelay()
+{
+    if (battery->getBatteryLevel() == 0 && !batteryPopup && !chargingInProgress) {
+        showChargerPopup();
+    }
+}
+
+// Called when the chargerButton is clicked; initiates the charger connection
 void MainWindow::onChargerButtonClicked()
 {
+    if (batteryPopup) {
+        batteryPopup->close();
+        batteryPopup = nullptr;
+    }
+    // Set the charging flag to true so that the popup is not shown later
+    chargingInProgress = true;
+
+    // Re-enable all buttons since charger is being connected
+    ui->bolusButton->setEnabled(true);
+    ui->historyButton->setEnabled(true);
+    ui->optionsButton->setEnabled(true);
     ui->chargerButton->setEnabled(false);
     logger->logEvent("Charger button clicked. Initiating charger connection.");
+    qDebug() << "Charger button clicked. Initiating charger connection.";
     battery->connectCharger();
 }
 
 void MainWindow::onBatteryFullyCharged() {
     ui->chargerButton->setEnabled(true);
+    chargingInProgress = false;
 }
 
 // Called when the power button is held to transition from power off screen
@@ -177,6 +205,8 @@ void MainWindow::onUnlockButtonClicked()
 // Called when the bolus button is clicked; transitions to the bolus screen
 void MainWindow::onBolusButtonClicked()
 {
+    logger->logEvent("Bolus button clicked. Switching to bolus screen.");
+    qDebug() << "Bolus button clicked. Switching to bolus screen.";
     ui->stackedWidget->setCurrentIndex(3);
 }
 
@@ -198,14 +228,12 @@ void MainWindow::option1Clicked()
     ui->stackedWidget->setCurrentIndex(4);
 }
 
-// Called when the "Power Off" option is selected
 void MainWindow::option2Clicked()
 {
     ui->stackedWidget->setCurrentIndex(0);
     ui->tandemLogoButton->setEnabled(false);
 }
 
-// Sets the read-only state for profile detail fields
 void MainWindow::setDetailsReadOnly(bool readOnly)
 {
     ui->basalRateValue->setReadOnly(readOnly);
@@ -214,7 +242,7 @@ void MainWindow::setDetailsReadOnly(bool readOnly)
     ui->targetGlucoseValue->setReadOnly(readOnly);
 }
 
-// Helper function: Displays the details of the provided profile in the UI.
+// Displays details of provided profile onto UI
 void MainWindow::displayProfileDetails(const Profile &profile)
 {
     ui->profileNameValue->setText(QString::fromStdString(profile.getName()));
@@ -227,7 +255,6 @@ void MainWindow::displayProfileDetails(const Profile &profile)
 // Called to create a new profile using user input
 void MainWindow::onNewProfileClicked()
 {
-    // Gather profile data from input dialogs
     QString name = QInputDialog::getText(this, "New Profile", "Enter profile name:");
     if (name.isEmpty())
         return;
@@ -257,7 +284,11 @@ void MainWindow::onNewProfileClicked()
     QListWidgetItem *item = new QListWidgetItem(name, ui->profileList);
     item->setData(Qt::UserRole, name);
 
-    // Update the bolus calculator combo box
+    // Log the profile creation even
+    logger->logEvent("Profile created: " + name);
+    qDebug() << "Profile created:" << name;
+
+    // Update the bolus calculator combo box.
     updateProfileComboBox();
 }
 
@@ -273,19 +304,26 @@ void MainWindow::onProfileSelected()
     Profile* profile = profileManager->getProfile(profileName.toStdString());
     if (profile) {
         displayProfileDetails(*profile);
+        // Log profile selection.
+        logger->logEvent("Profile selected: " + profileName);
+        qDebug() << "Profile selected:" << profileName;
     }
 }
 
-// Called to allow editing of the selected profile
 void MainWindow::onEditProfileClicked()
 {
     QListWidgetItem *selectedItem = ui->profileList->currentItem();
     if (!selectedItem)
         return;
+
+    // Log that profile editing has been initiated
+    QString editMsg = "Profile editing initiated for: " + selectedItem->data(Qt::UserRole).toString();
+    logger->logEvent(editMsg);
+    qDebug() << editMsg;
     setDetailsReadOnly(false);
 }
 
-// Called to save changes made to a profile
+// Called to save changes made to a profilE
 void MainWindow::onSaveProfileClicked()
 {
     QListWidgetItem *selectedItem = ui->profileList->currentItem();
@@ -303,8 +341,14 @@ void MainWindow::onSaveProfileClicked()
     bool success = profileManager->updateProfile(profileName.toStdString(), newBasal, newCorrFactor, newCarbRatio, newTargetGlucose);
     if (success) {
         setDetailsReadOnly(true);
+        QString successMsg = "Profile updated successfully: " + profileName;
+        logger->logEvent(successMsg);
+        qDebug() << successMsg;
         QMessageBox::information(this, "Success", "Profile updated successfully.");
     } else {
+        QString failMsg = "Profile update failed for: " + profileName;
+        logger->logEvent(failMsg);
+        qDebug() << failMsg;
         QMessageBox::warning(this, "Error", "Profile update failed.");
     }
 }
@@ -316,14 +360,17 @@ void MainWindow::onDeleteProfileClicked()
     if (!selectedItem)
         return;
 
-    // Confirm deletion of the selected profile.
     QString profileName = selectedItem->data(Qt::UserRole).toString();
     int ret = QMessageBox::question(this, "Delete Profile",
                                     "Are you sure you want to delete the profile '" + profileName + "'?");
     if (ret == QMessageBox::Yes) {
         bool success = profileManager->deleteProfile(profileName.toStdString());
         if (success) {
-            // Remove the profile from the list widget and clear detail fields.
+            // Log profile deletion.
+            QString delMsg = "Profile deleted: " + profileName;
+            logger->logEvent(delMsg);
+            qDebug() << delMsg;
+
             delete selectedItem;
             ui->profileList->blockSignals(true);
             ui->profileList->clearSelection();
@@ -334,12 +381,11 @@ void MainWindow::onDeleteProfileClicked()
             ui->correctionValue->clear();
             ui->targetGlucoseValue->clear();
 
-            // Update the bolus calculator combo box if profile deleted
+            // Update the bolus calculator box if profile deleted
             updateProfileComboBox();
         }
     }
 }
-
 
 void MainWindow::updateProfileComboBox() {
     ui->profilesComboBox->clear();
@@ -351,24 +397,31 @@ void MainWindow::updateProfileComboBox() {
 
 void MainWindow::onCalculateDoseButtonClicked()
 {
-    // 1) Get the profile name from the QComboBox
     QString selectedProfile = ui->profilesComboBox->currentText();
 
-    // 2) Tell BolusCalculator to load that profile
+    // Log the beginning of bolus dose calculation
+    logger->logEvent("Starting bolus dose calculation for profile: " + selectedProfile);
+    qDebug() << "Starting bolus dose calculation for profile:" << selectedProfile;
+
+    // Tell BolusCalculator to load that profile
     bolusCalc->getProfileByName(selectedProfile.toStdString());
 
-    // 3) Retrieve user input for current BG and carbs
+    // Retrieve user input for current BG and carbs
     double currentBG = ui->bloodGlucoseLevelValue->value();
     double totalCarbs = ui->carbohydratesValue->value();
 
-    // 4) Pass these inputs to BolusCalculator
+    // Pass these inputs to BolusCalculator
     bolusCalc->setCurrentGlucoseLevel(currentBG);
     bolusCalc->setTotalCarbs(totalCarbs);
 
-    // 5) Perform the calculation
+    // Perform the calculation
     double suggestedDose = bolusCalc->calculateBolus();
 
-    // 6) Display the result in the “Suggested Dose” label/line edit
+    // Log the calculated suggested dose
+    logger->logEvent("Suggested bolus dose calculated: " + QString::number(suggestedDose));
+    qDebug() << "Suggested bolus dose calculated:" << suggestedDose;
+
+    // Display the result in the “Suggested Dose” label/line edit
     ui->suggestedDoseValue->setText(QString::number(suggestedDose));
     ui->overrideDoseValue->setEnabled(true);
     ui->quickBolusPercent->setEnabled(true);
@@ -378,44 +431,46 @@ void MainWindow::onCalculateDoseButtonClicked()
 
 void MainWindow::onConfirmBolusButtonClicked()
 {
+    logger->logEvent("Bolus confirmation initiated.");
+    qDebug() << "Bolus confirmation initiated.";
+
     // Check if the suggested dose field is empty
     if (ui->suggestedDoseValue->text().isEmpty()) {
+        logger->logEvent("Bolus confirmation failed: Suggested dose is empty. Please calculate the dose first.");
+        qDebug() << "Bolus confirmation failed: Suggested dose is empty.";
         QMessageBox::warning(this, "Error", "No suggested dose calculated. Please calculate the dose first.");
         return;
     }
 
-    // Get the percentage values from the spin boxes.
     int immediatePercent = ui->quickBolusPercent->value();
     int extendedPercent = ui->extendedBolusPercent->value();
     int duration = ui->extendedBolusHours->value();
 
-    // Check that the percentages add up to 100.
+    // Check that the percentages add up to 100
     if (immediatePercent + extendedPercent != 100) {
+        logger->logEvent("Bolus confirmation failed: The sum of immediate and extended percentages does not equal 100.");
+        qDebug() << "Bolus confirmation failed: Percentages do not add up to 100.";
         QMessageBox::warning(this, "Invalid Input",
                              "The sum of the immediate and extended percentages must equal 100.");
         return;
     }
 
-    // Check if the override dose field is filled.
+    // Check if the override dose field is filled
     double overrideDose = ui->overrideDoseValue->value();
     if (overrideDose > 0) {
         bolusCalc->setPercentOfImmediateDose(immediatePercent);
         bolusCalc->setDurationForExtendedBolus(duration);
         bolusCalc->setPercentOfExtendedDose(extendedPercent);
-
         bolusCalc->overrideBolus(overrideDose);
-    }
-    else {
-        // Update the BolusCalculator with these values.
+    } else {
+        // Update the BolusCalculator with these values
         bolusCalc->setPercentOfImmediateDose(immediatePercent);
         bolusCalc->calculateImmediateBolusDose();
-
         bolusCalc->setDurationForExtendedBolus(duration);
         bolusCalc->setPercentOfExtendedDose(extendedPercent);
         bolusCalc->calculateExtendedBolusDose();
     }
 
-    // Format the results string.
     QString result;
     result += QString("Immediate Insulin Dose: %1 units at meal time\n")
                   .arg(bolusCalc->getImmediateDose(), 0, 'f', 1);
@@ -425,7 +480,29 @@ void MainWindow::onConfirmBolusButtonClicked()
     result += QString("Total Insulin Administered: %1 units")
                   .arg(bolusCalc->getTotalBolusAfterIOB(), 0, 'f', 0);
 
-    // Display the results in an information popup.
-    QMessageBox::information(this, "Bolus Calculation", result);
+    // Log the successful bolus confirmation with the calculated details
+    logger->logEvent("Bolus confirmation successful: " + result);
+    qDebug() << "Bolus confirmation successful:" << result;
 
+    // Display the results in an information popup
+    QMessageBox::information(this, "Bolus Calculation", result);
+}
+
+void MainWindow::showChargerPopup()
+{
+    if (batteryPopup)
+        return;
+    // Disable buttons except for the charger button
+    ui->bolusButton->setEnabled(false);
+    ui->historyButton->setEnabled(false);
+    ui->optionsButton->setEnabled(false);
+
+    // Create the popup
+    batteryPopup = new QDialog(this);
+    batteryPopup->setWindowModality(Qt::NonModal);
+    batteryPopup->setWindowTitle("Battery Empty");
+    QVBoxLayout *layout = new QVBoxLayout(batteryPopup);
+    QLabel *label = new QLabel("Battery is 0%. Please connect the charger.", batteryPopup);
+    layout->addWidget(label);
+    batteryPopup->show();
 }

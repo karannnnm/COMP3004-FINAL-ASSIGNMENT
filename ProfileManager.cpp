@@ -1,3 +1,5 @@
+// Devanjali Das, Gurleen Bassali, Karan Modi, Zainab Jahangir
+
 #include "ProfileManager.h"
 
 // Add a new profile
