@@ -69,7 +69,7 @@ int main() {
     controlIQ.mimicGlucoseSpike();
     controlIQ.mimicGlucoseSpike();
 
-    controlIQ.moniterGlucoseLevel();
+    controlIQ.monitorGlucoseLevel();
     
 
 
