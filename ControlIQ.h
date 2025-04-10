@@ -57,6 +57,7 @@ enum class BolusDeliveryStatus{
 
 class ControlIQ {
 public:
+
     // Method to fetch bolus data from BolusCalculator
     ControlIQ();
     // Profile* currentProfile = nullptr;
@@ -88,6 +89,7 @@ public:
     //this function will always be running for the lifetime of the simulation.
     // will continuously monitor the bglevel and based on it deliver the basal insulin
     void monitorGlucoseLevel();
+    void deliverBasal(double insulinAmount);
     
     
 
@@ -107,6 +109,7 @@ public:
 
     
     private:
+    bool isGlucoseLevelSafe () const;
     double* currentBloodGlucoseLevel;
     
     //bolus data coming from BolusCalculator

@@ -45,6 +45,11 @@ void BolusCalculator::setCurrentGlucoseLevel(double level){
     this->currentBloodGlucoseLevel = level;
 }
 
+double BolusCalculator::fetchCurrentGlucoseLevelFromCGM(){
+    return this->currentBloodGlucoseLevel;
+}
+
+
 void BolusCalculator::setTotalCarbs(double totalCarbs){
     this->totalCarbs = totalCarbs;
 }

@@ -27,7 +27,7 @@ int main() {
     BolusCalculator bolus(manager);
     bolus.getProfileByName("ControlIQ test");
 
-    bolus.setCurrentGlucoseLevel(6.5);
+    bolus.setCurrentGlucoseLevel(3.89999);
     bolus.setTotalCarbs(50);
     bolus.calculateBolus();
 
@@ -37,6 +37,10 @@ int main() {
     bolus.setPercentOfExtendedDose(50);
     bolus.setDurationForExtendedBolus(4);
     bolus.calculateExtendedBolusDose();
+    bolus.printStep2();
+    bolus.areInputsValid();
+    bolus.printStep3();
+
 
     // cout<<bolus.getCurrentGlucoseLevel()<<endl;    
     
@@ -50,6 +54,7 @@ int main() {
     controlIQ.displayBolusData();
     cout<<"\n--------------Starting bolus delivery -----------------------"<<endl<<endl;
     controlIQ.startBolus();
+    controlIQ.mimicGlucoseSpike();
     
     controlIQ.displayBolusData();
     controlIQ.deliverExtendedBolus();
@@ -57,13 +62,26 @@ int main() {
     // cout<<"---------------bolus paused"<<endl;
     // controlIQ.pauseBolus();
     // cout<<"---------------bolus resumed"<<endl;
-    controlIQ.resumeBolus();
+    // controlIQ.resumeBolus();
+    controlIQ.deliverExtendedBolus();
+    controlIQ.deliverExtendedBolus();
+    // bolus.setCurrentGlucoseLevel(5.6);
+    controlIQ.mimicGlucoseSpike();
+    controlIQ.mimicGlucoseSpike();
+    controlIQ.mimicGlucoseSpike();
     controlIQ.deliverExtendedBolus();
     controlIQ.deliverExtendedBolus();
     controlIQ.deliverExtendedBolus();
-    controlIQ.deliverExtendedBolus();
-    controlIQ.deliverExtendedBolus();
-    // controlIQ.mimicGlucoseSpike();
+    controlIQ.mimicGlucoseSpike();
+    controlIQ.mimicGlucoseSpike();
+    controlIQ.mimicGlucoseSpike();
+    controlIQ.mimicGlucoseSpike();
+    controlIQ.mimicGlucoseSpike();
+    controlIQ.mimicGlucoseSpike();
+    controlIQ.mimicGlucoseSpike();
+    controlIQ.mimicGlucoseSpike();
+    controlIQ.mimicGlucoseSpike();
+    controlIQ.mimicGlucoseSpike();
     controlIQ.deliverExtendedBolus();
     controlIQ.deliverExtendedBolus();
     controlIQ.mimicGlucoseSpike();
