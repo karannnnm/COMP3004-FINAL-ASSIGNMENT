@@ -85,6 +85,11 @@ Profile* currentProfile = nullptr;
 //step 2: fetch variables for bolus calculation 
 // 2.1 setters and getters for manual inputs for calculation
 void setCurrentGlucoseLevel(double level);
+
+//for fetching from CGM
+double fetchCurrentGlucoseLevelFromCGM();
+
+
 void setTotalCarbs(double totalCarbs);
 double getCurrentGlucoseLevel() const;
 double& getCurrentGlucoseLevelToLink();
@@ -148,7 +153,7 @@ bool areInputsValid() const;
     ProfileManager& profileManager;  // Reference to access user settings
     
     // input variables for bolus calc that user will manually enter
-    double currentBloodGlucoseLevel;
+    double currentBloodGlucoseLevel = 7.6;
     double totalCarbs;
     double IOB = 5.0;
 

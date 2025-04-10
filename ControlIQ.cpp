@@ -34,12 +34,28 @@ void ControlIQ::fetchCurrentProfile(const BolusCalculator& bolusCalculator){
     }
 } 
 
-void ControlIQ::mimicGlucoseSpike(){
-    if (bolusStatus != BolusDeliveryStatus::RUNNING)
+bool ControlIQ::isGlucoseLevelSafe () const{
+    if (!currentBloodGlucoseLevel) return false;
+    
+    if (*currentBloodGlucoseLevel<3.9)
     {
-        *currentBloodGlucoseLevel += 0.012;
-        cout<<"Glucose spiked by "<<*currentBloodGlucoseLevel <<" mmol/L"<<endl;
-        return;
+        cout<<"\nBGLEVEL too low = "<<*currentBloodGlucoseLevel<<endl;
+        cout<<"Suspending all insulin delivery !!!"<<endl;
+        return false;
+    }
+    return true;
+}
+
+
+void ControlIQ::mimicGlucoseSpike() {
+    double oldLevel = *currentBloodGlucoseLevel;
+    *currentBloodGlucoseLevel += 0.012;
+    
+    cout << "Glucose increased from " << oldLevel << " to " << *currentBloodGlucoseLevel << " mmol/L" << endl;
+    
+    // If glucose has recovered above 3.9, indicate that insulin delivery can resume
+    if (oldLevel < 3.9 && *currentBloodGlucoseLevel >= 3.9) {
+        cout << " Glucose levels recovered - insulin delivery can resume" << endl;
     }
 }
 
@@ -60,10 +76,22 @@ double ControlIQ::getDurationOfExtendedBolus(){
      
     
 void ControlIQ::startBolus(){
+
+    if (!isGlucoseLevelSafe())
+    {
+        if (bolusStatus == BolusDeliveryStatus::RUNNING)
+        {
+            pauseBolus();
+        }
+        return;
+    }
+  
     if (bolusStatus != BolusDeliveryStatus::NOT_STARTED && bolusStatus != BolusDeliveryStatus::PAUSED){
         cout<<"Bolus seems suspended !!"<<endl;
         return;
     }
+
+    
     
     //deliver the immediate bolus dose
     if (bolusStatus == BolusDeliveryStatus::NOT_STARTED)
@@ -93,6 +121,29 @@ void ControlIQ::startBolus(){
 
 
 void ControlIQ::deliverExtendedBolus() {
+
+
+    if (bolusStatus == BolusDeliveryStatus::NOT_STARTED)
+    {
+        cout<<"'''''''''''''''First delivering the immediate dose"<<endl;
+        startBolus();
+        return;
+    }
+    
+
+    if (!isGlucoseLevelSafe()) {
+        if (bolusStatus == BolusDeliveryStatus::RUNNING) {
+            pauseBolus();
+        }
+        return;
+    }
+    else if (isGlucoseLevelSafe() && bolusStatus == BolusDeliveryStatus::PAUSED)
+    {
+        resumeBolus();
+    }
+
+
+
     // Check if there's any extended bolus to deliver
     if (extendedDose <= 0 || durationOfExtendedBolus <= 0 || extendedDosePerHour <= 0) {
         cout << "[Extended Bolus] No extended bolus remaining to deliver." << endl;
@@ -155,13 +206,21 @@ void ControlIQ::pauseBolus(){
 
 
 void ControlIQ::resumeBolus(){
+
+    if (!isGlucoseLevelSafe())
+    {
+        cout<<"Cannot Resume Bolus - glucose level tooo low "<<endl;
+        return;
+    }
+    
+
     if (bolusStatus != BolusDeliveryStatus::PAUSED)
     {
         cout << ":::::::::  Cannot resume bolus - current status: " << static_cast<int>(bolusStatus) << endl;
         return;
     }
     bolusStatus = BolusDeliveryStatus::RUNNING;
-    cout<<"::::::::::::::: Bolus successfully resumed"<<endl;       
+    cout<<"::::::::::::::: Bolus successfully resumeddd"<<endl;       
 }
 
 void ControlIQ::suspendBolus() {
@@ -196,6 +255,12 @@ void ControlIQ::suspendBolus() {
 // > 10	         Increase basal rate slightly
 
 void ControlIQ::deliverBasal(double insulinAmount){
+
+    if (!isGlucoseLevelSafe()) {
+        cout << "Basal delivery suspended - glucose level too low" << endl;
+        return;
+    }
+
     double glucoseToReduce = insulinAmount * this->currentProfile->getCorrectionFactor();
     *currentBloodGlucoseLevel -= glucoseToReduce;
     
@@ -215,6 +280,15 @@ void ControlIQ::monitorGlucoseLevel() {
     cout << "\n====== Glucose Monitoring ======" << endl;
     cout << "Current BG: " << bg << " mmol/L" << endl;
     cout << "Base basal rate: " << baseRate << " units/hour" << endl;
+
+
+    if (!isGlucoseLevelSafe()) {
+        // Suspend all insulin delivery
+        if (bolusStatus == BolusDeliveryStatus::RUNNING) {
+            pauseBolus();
+        }
+        return;
+    }
 
     // Determine how much basal to give based on glucose level
     if (bg < 3.9) {
