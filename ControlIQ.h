@@ -80,6 +80,7 @@ public:
     void suspendBolus();
     // attach this function to qtimer and call it every 30 seconds.
     void deliverExtendedBolus();
+    void deliverBasal(double insulinAmount);
     
 
     //basal related functions
