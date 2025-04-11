@@ -333,3 +333,16 @@ void ControlIQ::displayProfileData() const{
     cout<<endl<<endl;
     
 }
+
+
+
+//attach this function to qtimer and call it every 15 seconds.
+// This function will be called to check the glucose level 
+double returnCurrentBloodGlucoseLevelToControlIQ(const ControlIQ& controlIQ) {
+    if (controlIQ.currentBloodGlucoseLevel) {
+        return *(controlIQ.currentBloodGlucoseLevel);
+    } else {
+        cout << "Error: currentBloodGlucoseLevel is not linked!" << endl;
+        return -1;
+    }
+}
