@@ -89,7 +89,7 @@ public:
     //this function will always be running for the lifetime of the simulation.
     // will continuously monitor the bglevel and based on it deliver the basal insulin
     void monitorGlucoseLevel();
-    void deliverBasal(double insulinAmount);
+    // void deliverBasal(double insulinAmount);
     
     
 
