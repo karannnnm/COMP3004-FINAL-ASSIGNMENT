@@ -41,11 +41,13 @@ double CGM::getCurrentGlucose() const {
 const std::vector<std::pair<time_t, double>>& CGM::getGlucoseHistory() const {
     if (!controlIQPtr) {
         cout << "Error: CGM not connected to ControlIQ!" << endl;
-        return {};
+        static const std::vector<std::pair<time_t, double>> emptyHistory;
+        return emptyHistory;
     }
     if (glucoseHistory.empty()) {
         cout << "No glucose history available." << endl;
-        return {};
+        static const std::vector<std::pair<time_t, double>> emptyHistory;
+        return emptyHistory;
     }
     for (const auto& reading : glucoseHistory) {
         cout << "Time: " << std::ctime(&reading.first) 
