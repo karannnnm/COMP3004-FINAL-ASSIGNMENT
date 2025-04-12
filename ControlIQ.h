@@ -58,6 +58,9 @@ enum class BolusDeliveryStatus{
 class ControlIQ {
 public:
 
+    friend double returnCurrentBloodGlucoseLevelToControlIQ(const ControlIQ& controlIQ);
+
+
     // Method to fetch bolus data from BolusCalculator
     ControlIQ();
     // Profile* currentProfile = nullptr;
