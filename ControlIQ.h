@@ -71,13 +71,13 @@ public:
     void fetchBolusData(const BolusCalculator& bolusCalculator);
     void linkCurrentBloodGlucoseLevel(BolusCalculator& bolusCalculator);
     void fetchCurrentProfile(const BolusCalculator& bolusCalculator);
+
     double getCurrentBloodGlucose();
     double getDurationOfExtendedBolus();
     
     
     
     //bolus related functions
-
     void startBolus();
     void pauseBolus();
     void resumeBolus();
@@ -88,13 +88,10 @@ public:
     
 
     //basal related functions
-
     //this function will always be running for the lifetime of the simulation.
     // will continuously monitor the bglevel and based on it deliver the basal insulin
     void monitorGlucoseLevel();
     // void deliverBasal(double insulinAmount);
-    
-    
 
 
     Profile* currentProfile = nullptr;

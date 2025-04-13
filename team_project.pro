@@ -11,6 +11,7 @@ CONFIG += c++11
 
 SOURCES += \
     BolusCalculator.cpp \
+    CGM.cpp \
     ControlIQ.cpp \
     Profile.cpp \
     ProfileManager.cpp \
@@ -21,6 +22,7 @@ SOURCES += \
 
 HEADERS += \
     BolusCalculator.h \
+    CGM.h \
     ControlIQ.h \
     Profile.h \
     ProfileManager.h \

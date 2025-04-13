@@ -101,7 +101,7 @@ void USBConnection::simulateBatteryDrain() {
 void USBConnection::reduceBatteryLevel() {
     if (!isCharging && batteryLevel > 0) {
         batteryLevel -= 1;
-        qDebug() << "Battery level is now at:" << batteryLevel << "%";
+        //qDebug() << "Battery level is now at:" << batteryLevel << "%";
 
         // Stop the drain timer if the battery is fully drained.
         if (batteryLevel <= 0) {

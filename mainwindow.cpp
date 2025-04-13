@@ -20,6 +20,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , profileManager(new ProfileManager)
     , bolusCalc(nullptr)
+    , controlIQ(nullptr)
+    , controlIQTimer(nullptr)
     , batteryPopup(nullptr)
 {
     ui->setupUi(this);
@@ -27,6 +29,25 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Instantiate BolusCalculator and pass in the existing ProfileManager reference
     bolusCalc = new BolusCalculator(*profileManager);
+
+
+
+
+    // Instantiate ControlIQ
+    controlIQ  = new ControlIQ();
+    //controlIQ->fetchBolusData(*bolusCalc);
+    controlIQ->linkCurrentBloodGlucoseLevel(*bolusCalc);
+    controlIQ->fetchCurrentProfile(*bolusCalc);
+
+
+    // Create and start the control iq timer (fires every 5 seconds)
+    controlIQTimer = new QTimer(this);
+    connect(controlIQTimer, SIGNAL(timeout()), this, SLOT(onControlIQTimerTimeout()));
+    controlIQTimer->start(5000);
+
+
+
+
 
     // Initialize logger with the log widget from the UI
     logger = new Logger(ui->log);
@@ -105,12 +126,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->calculateDoseButton, SIGNAL(released()), this, SLOT(onCalculateDoseButtonClicked()));
     connect(ui->confirmBolusButton, SIGNAL(released()), this, SLOT(onConfirmBolusButtonClicked()));
+    connect(ui->fetchCGMButton, SIGNAL(clicked()), this, SLOT(onFetchFromCGMButtonClicked()));
+
 }
 
 // Destructor
 MainWindow::~MainWindow()
 {
     delete profileManager;
+    delete bolusCalc;
+    delete controlIQ;
     delete ui;
     delete logger;
 }
@@ -450,8 +475,7 @@ void MainWindow::onConfirmBolusButtonClicked()
     if (immediatePercent + extendedPercent != 100) {
         logger->logEvent("Bolus confirmation failed: The sum of immediate and extended percentages does not equal 100.");
         qDebug() << "Bolus confirmation failed: Percentages do not add up to 100.";
-        QMessageBox::warning(this, "Invalid Input",
-                             "The sum of the immediate and extended percentages must equal 100.");
+        QMessageBox::warning(this, "Invalid Input", "The sum of the immediate and extended percentages must equal 100.");
         return;
     }
 
@@ -480,13 +504,40 @@ void MainWindow::onConfirmBolusButtonClicked()
     result += QString("Total Insulin Administered: %1 units")
                   .arg(bolusCalc->getTotalBolusAfterIOB(), 0, 'f', 0);
 
-    // Log the successful bolus confirmation with the calculated details
-    logger->logEvent("Bolus confirmation successful: " + result);
-    qDebug() << "Bolus confirmation successful:" << result;
+    logger->logEvent("Bolus confirmation successful: " + result); // Log the successful bolus confirmation with the calculated detail
+    QMessageBox::information(this, "Bolus Calculation", result); // Display the results in an information popup
 
-    // Display the results in an information popup
-    QMessageBox::information(this, "Bolus Calculation", result);
+    // Update ControlIQ with the latest bolus calculator data
+    controlIQ->fetchBolusData(*bolusCalc);
+    controlIQ->linkCurrentBloodGlucoseLevel(*bolusCalc);
+    controlIQ->fetchCurrentProfile(*bolusCalc);
+
+    // Start Bolus
+    controlIQ->startBolus();
+
+    resetBolusCalculatorUI();
 }
+
+void MainWindow::resetBolusCalculatorUI()
+{
+    // Clear the input fields
+    ui->bloodGlucoseLevelValue->setValue(0.0);
+    ui->carbohydratesValue->setValue(0.0);
+    ui->suggestedDoseValue->clear();
+    ui->overrideDoseValue->setValue(0.0);
+
+    // Reset these fields to zero or other defaults
+    ui->quickBolusPercent->setValue(0);
+    ui->extendedBolusPercent->setValue(0);
+    ui->extendedBolusHours->setValue(0);
+
+    // Disable the override dose, quick bolus, and extended bolus fields
+    ui->overrideDoseValue->setEnabled(false);
+    ui->quickBolusPercent->setEnabled(false);
+    ui->extendedBolusPercent->setEnabled(false);
+    ui->extendedBolusHours->setEnabled(false);
+}
+
 
 void MainWindow::showChargerPopup()
 {
@@ -505,4 +556,35 @@ void MainWindow::showChargerPopup()
     QLabel *label = new QLabel("Battery is 0%. Please connect the charger.", batteryPopup);
     layout->addWidget(label);
     batteryPopup->show();
+}
+
+void MainWindow::onControlIQTimerTimeout()
+{
+
+    controlIQ->mimicGlucoseSpike(); // Mimic natural glucose spike
+    //qDebug("mimic reached ");
+
+    controlIQ->monitorGlucoseLevel(); // Monitor glucose level and deliver basal insulin accordingly
+    //qDebug("monitor reached ");
+
+    controlIQ->deliverExtendedBolus(); // Deliver extended bolus insulin if a bolus has been started --> If no bolus running function will return immediately
+    ///qDebug("extended reached ");
+
+    // Update UI
+    ui->glucoseLevel->setText(QString::number(controlIQ->getCurrentBloodGlucose()));
+    ui->profileValue->setText(QString::fromStdString(controlIQ->currentProfile->getName()));
+    //ui->iobValue->setText(); ??
+}
+
+
+void MainWindow::onFetchFromCGMButtonClicked()
+{
+    // Call the function to get the current glucose level from CGM
+    double currentGlucose = bolusCalc->fetchCurrentGlucoseLevelFromCGM();
+
+    // Display this value in the bloodGlucoseLevelValue QDoubleSpinBox
+    ui->bloodGlucoseLevelValue->setValue(currentGlucose);
+
+    // Optionally, log or debug print the value
+    qDebug() << "Fetched CGM Glucose Level:" << currentGlucose;
 }

@@ -29,6 +29,9 @@ private:
     Ui::MainWindow *ui;
     ProfileManager *profileManager;
     BolusCalculator *bolusCalc;
+    ControlIQ *controlIQ;
+    QTimer *controlIQTimer;
+
     const QString correctPIN = "1234";
     Logger* logger;
     bool chargingInProgress = false;
@@ -37,16 +40,12 @@ private:
     QDialog *batteryPopup = nullptr; // added member variable
 
     // Helper functions
-
-    // Displays the details of the provided profile in the UI
-    void displayProfileDetails(const Profile &profile);
-
-    // Sets the read-only state for profile detail fields
-    void setDetailsReadOnly(bool readOnly);
-
+    void displayProfileDetails(const Profile &profile); // Displays the details of the provided profile in the UI
+    void setDetailsReadOnly(bool readOnly); // Sets the read-only state for profile detail fields
     void updateProfileComboBox();
-
     void showChargerPopup();
+    void resetBolusCalculatorUI();
+
 
 private slots:
     void onPowerButtonHeld();
@@ -70,6 +69,9 @@ private slots:
     void onConfirmBolusButtonClicked();
 
     void checkBatteryAfterDelay();
+    void onControlIQTimerTimeout();
+    void onFetchFromCGMButtonClicked();
+
 
 };
 
