@@ -3,6 +3,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QtCharts/QChartView>
+QT_CHARTS_USE_NAMESPACE
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QChart>
+#include <QtCharts/QValueAxis>
 #include <QMainWindow>
 #include <QDialog> // added include for QDialog
 #include "ProfileManager.h"
@@ -29,6 +34,9 @@ private:
     Ui::MainWindow *ui;
     ProfileManager *profileManager;
     BolusCalculator *bolusCalc;
+    ControlIQ *controlIQ;
+    QTimer *controlIQTimer;
+
     const QString correctPIN = "1234";
     Logger* logger;
     bool chargingInProgress = false;
@@ -36,17 +44,20 @@ private:
     USBConnection* battery;
     QDialog *batteryPopup = nullptr; // added member variable
 
+    QLineSeries *cgmSeries;      // Persistent pointer for the CGM data series
+    QValueAxis *axisX;           // X-axis for the time
+    QValueAxis *axisY;           // Y-axis for the blood glucose level
+    int timeCounter = 0;
+    QDialog *insulinPopup = nullptr;
+
+
     // Helper functions
-
-    // Displays the details of the provided profile in the UI
-    void displayProfileDetails(const Profile &profile);
-
-    // Sets the read-only state for profile detail fields
-    void setDetailsReadOnly(bool readOnly);
-
+    void displayProfileDetails(const Profile &profile); // Displays the details of the provided profile in the UI
+    void setDetailsReadOnly(bool readOnly); // Sets the read-only state for profile detail fields
     void updateProfileComboBox();
-
     void showChargerPopup();
+    void resetBolusCalculatorUI();
+
 
 private slots:
     void onPowerButtonHeld();
@@ -70,6 +81,16 @@ private slots:
     void onConfirmBolusButtonClicked();
 
     void checkBatteryAfterDelay();
+    void onControlIQTimerTimeout();
+    void onFetchFromCGMButtonClicked();
+
+    void onImmediateDoseDelivered();
+    void onExtendedDoseCompleted();
+    void onRefillInsulinClicked();
+
+    void onResumeBolusButtonClicked();
+    void onPauseBolusButtonClicked();
+    void onStopBolusButtonClicked();
 
 };
 

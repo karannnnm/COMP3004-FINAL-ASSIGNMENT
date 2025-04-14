@@ -49,6 +49,9 @@ double BolusCalculator::fetchCurrentGlucoseLevelFromCGM(){
     return this->currentBloodGlucoseLevel;
 }
 
+double BolusCalculator::fetchCarbsFromCGM(){
+    return this->totalCarbs;
+}
 
 void BolusCalculator::setTotalCarbs(double totalCarbs){
     this->totalCarbs = totalCarbs;
@@ -228,6 +231,7 @@ std::vector<double> getBolusData(const BolusCalculator& bolusCalculator) {
         bolusCalculator.extendedDose,
         bolusCalculator.extendedDosePerHour,
         bolusCalculator.durationOfExtendedBolus,
+        bolusCalculator.IOB
         // bolusCalculator.currentBloodGlucoseLevel
     };
 }

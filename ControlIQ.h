@@ -5,6 +5,8 @@
 
 
 #include <vector>
+#include <QObject>
+
 class Profile;
 class BolusCalculator;
 
@@ -55,7 +57,8 @@ enum class BolusDeliveryStatus{
 */
 
 
-class ControlIQ {
+class ControlIQ : public QObject {
+    Q_OBJECT
 public:
 
     friend double returnCurrentBloodGlucoseLevelToControlIQ(const ControlIQ& controlIQ);
@@ -71,13 +74,14 @@ public:
     void fetchBolusData(const BolusCalculator& bolusCalculator);
     void linkCurrentBloodGlucoseLevel(BolusCalculator& bolusCalculator);
     void fetchCurrentProfile(const BolusCalculator& bolusCalculator);
+
     double getCurrentBloodGlucose();
     double getDurationOfExtendedBolus();
+    BolusDeliveryStatus getBolusStatus();
     
     
     
     //bolus related functions
-
     void startBolus();
     void pauseBolus();
     void resumeBolus();
@@ -88,32 +92,33 @@ public:
     
 
     //basal related functions
-
     //this function will always be running for the lifetime of the simulation.
     // will continuously monitor the bglevel and based on it deliver the basal insulin
     void monitorGlucoseLevel();
     // void deliverBasal(double insulinAmount);
-    
-    
 
 
     Profile* currentProfile = nullptr;
 
-
-
     // double getCurrentBloodGlucose();
-
-
-
 
     // Method to display the received bolus data (for debugging)
     void displayBolusData() const;
     void displayProfileData() const;
 
-    
-    private:
+    double getIOB();
+    double getInsulinFillGauge();
+    double setInsulinFillGauge(double);
+    void simulateIOBFluctuation();
+    void simulateInsulinFillGaugeFluctuation();
     bool isGlucoseLevelSafe () const;
+    double generateRandomDouble(double min = 30.0, double max = 60.0);
+    bool userPaused = false;  // indicates a user-initiated pause
+    
+private:
     double* currentBloodGlucoseLevel;
+    double IOB;
+    double insulinFillGauge = 250.0;
     
     //bolus data coming from BolusCalculator
     double immediateDose = 0.0;
@@ -121,16 +126,16 @@ public:
     double extendedDosePerHour = 0.0;
     double durationOfExtendedBolus = 0; //in hours
 
-    
-    
-    //variables to manage the bolus delivery
     BolusDeliveryStatus bolusStatus = BolusDeliveryStatus::NOT_STARTED;
-
 
     double bolusDelivered = 0.0;
     double totalBolusToDeliver = 0.0;
     double extendedBolus = 0.0;
     double extendedDurationSeconds = 0.0;
+
+signals:
+    void immediateDoseDelivered();
+    void extendedDoseCompleted();
 
 };
 

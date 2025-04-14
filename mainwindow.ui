@@ -338,7 +338,7 @@ padding: 5px;</string>
         </rect>
        </property>
        <property name="text">
-        <string>update w value</string>
+        <string>Not Started</string>
        </property>
       </widget>
       <widget class="QLabel" name="glucoseStatus">
@@ -388,7 +388,7 @@ color: rgb(94, 92, 100);</string>
         <string notr="true">color: rgb(0, 0, 0)</string>
        </property>
        <property name="text">
-        <string>num units</string>
+        <string>0.0</string>
        </property>
       </widget>
       <widget class="QLabel" name="Profile">
@@ -473,7 +473,7 @@ border-radius: 8px;</string>
 border: 1px solid black;</string>
       </property>
       <property name="text">
-       <string>250 units</string>
+       <string>250</string>
       </property>
      </widget>
      <widget class="QToolButton" name="optionsButton">
@@ -564,7 +564,7 @@ padding: 5px;</string>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QPushButton" name="fetchCGM">
+      <widget class="QPushButton" name="fetchCGMButton">
        <property name="geometry">
         <rect>
          <x>450</x>
@@ -647,6 +647,9 @@ padding: 5px;</string>
        <property name="styleSheet">
         <string notr="true">background-color: none;</string>
        </property>
+       <property name="maximum">
+        <double>100.000000000000000</double>
+       </property>
       </widget>
      </widget>
      <widget class="QFrame" name="frame_3">
@@ -724,6 +727,9 @@ padding: 5px;</string>
        <property name="styleSheet">
         <string notr="true">background-color: none;</string>
        </property>
+       <property name="maximum">
+        <double>100.000000000000000</double>
+       </property>
       </widget>
      </widget>
      <widget class="QFrame" name="frame_4">
@@ -775,6 +781,9 @@ padding: 5px;</string>
        <property name="styleSheet">
         <string notr="true">background-color: none;background-color: none;</string>
        </property>
+       <property name="maximum">
+        <number>100</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="extendedBolusPercent">
        <property name="enabled">
@@ -790,6 +799,9 @@ padding: 5px;</string>
        </property>
        <property name="styleSheet">
         <string notr="true">background-color: none;background-color: none;</string>
+       </property>
+       <property name="maximum">
+        <number>100</number>
        </property>
       </widget>
       <widget class="QLabel" name="quickBolus">
@@ -872,7 +884,7 @@ padding: 5px;</string>
       <widget class="QPushButton" name="stopBolusButton">
        <property name="geometry">
         <rect>
-         <x>410</x>
+         <x>520</x>
          <y>10</y>
          <width>121</width>
          <height>41</height>
@@ -890,10 +902,10 @@ padding: 5px;</string>
         <string>Stop Bolus</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="cancelBolusButton">
+      <widget class="QPushButton" name="pauseBolusButton">
        <property name="geometry">
         <rect>
-         <x>270</x>
+         <x>360</x>
          <y>10</y>
          <width>121</width>
          <height>41</height>
@@ -908,13 +920,13 @@ padding: 5px;</string>
     font-size: 14px;</string>
        </property>
        <property name="text">
-        <string>Cancel Bolus</string>
+        <string>Pause Bolus</string>
        </property>
       </widget>
       <widget class="QPushButton" name="confirmBolusButton">
        <property name="geometry">
         <rect>
-         <x>110</x>
+         <x>30</x>
          <y>10</y>
          <width>131</width>
          <height>41</height>
@@ -930,6 +942,27 @@ padding: 5px;</string>
        </property>
        <property name="text">
         <string>Confirm Bolus</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="resumeBolusButton">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>10</y>
+         <width>131</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">    background-color: rgb(245, 194, 17);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;</string>
+       </property>
+       <property name="text">
+        <string>Resume Bolus</string>
        </property>
       </widget>
      </widget>

@@ -20,6 +20,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , profileManager(new ProfileManager)
     , bolusCalc(nullptr)
+    , controlIQ(nullptr)
+    , controlIQTimer(nullptr)
     , batteryPopup(nullptr)
 {
     ui->setupUi(this);
@@ -28,14 +30,24 @@ MainWindow::MainWindow(QWidget *parent)
     // Instantiate BolusCalculator and pass in the existing ProfileManager reference
     bolusCalc = new BolusCalculator(*profileManager);
 
+    // Instantiate ControlIQ
+    controlIQ  = new ControlIQ();
+    //controlIQ->fetchBolusData(*bolusCalc);
+    controlIQ->linkCurrentBloodGlucoseLevel(*bolusCalc);
+    controlIQ->fetchCurrentProfile(*bolusCalc);
+
+
+    // Create and start the control iq timer (fires every 5 seconds)
+    controlIQTimer = new QTimer(this);
+    connect(controlIQTimer, SIGNAL(timeout()), this, SLOT(onControlIQTimerTimeout()));
+    controlIQTimer->start(5000);
+
     // Initialize logger with the log widget from the UI
     logger = new Logger(ui->log);
 
     // Instantiate the battery simulation (USBConnection) and let MainWindow be its parent.
     battery = new USBConnection(this);
-
-    // Start battery drain immediately
-    battery->simulateBatteryDrain();
+    battery->simulateBatteryDrain(); // Start battery drain immediately
 
     // Create a QTimer to update the battery display every 1 second.
     QTimer *batteryTimer = new QTimer(this);
@@ -43,32 +55,27 @@ MainWindow::MainWindow(QWidget *parent)
     batteryTimer->start(1000);
 
     // Set up the CGM chart
-    QLineSeries *series = new QLineSeries();
-    series->append(0, 3.4);
-    series->append(1, 3.2);
-    series->append(2, 3.0);
-    series->append(3, 3.2);
-    series->append(4, 20);
-
+    cgmSeries = new QLineSeries();
     QChart *chart = new QChart();
     chart->legend()->hide();
-    chart->addSeries(series);
+    chart->addSeries(cgmSeries);
 
     // Configure chart axes
-    QValueAxis *axisY = new QValueAxis;
+    axisY = new QValueAxis;
     axisY->setRange(2, 22); // Glucose levels range from 2 to 22 mmol/L.
     axisY->setTitleText("Glucose Level (mmol/L)");
     chart->addAxis(axisY, Qt::AlignLeft);
-    series->attachAxis(axisY);
+    cgmSeries->attachAxis(axisY);
 
-    QValueAxis *axisX = new QValueAxis;
+    axisX = new QValueAxis;
     axisX->setTitleText("Time");
     chart->addAxis(axisX, Qt::AlignBottom);
-    series->attachAxis(axisX);
+    cgmSeries->attachAxis(axisX);
 
     chart->setTitle("CGM Data");
     ui->chartView->setChart(chart);
     ui->chartView->setRenderHint(QPainter::Antialiasing);
+
 
     // Set up options drop-down menu
     QMenu *dropDownMenu = new QMenu(this);
@@ -105,12 +112,24 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->calculateDoseButton, SIGNAL(released()), this, SLOT(onCalculateDoseButtonClicked()));
     connect(ui->confirmBolusButton, SIGNAL(released()), this, SLOT(onConfirmBolusButtonClicked()));
+    connect(ui->fetchCGMButton, SIGNAL(clicked()), this, SLOT(onFetchFromCGMButtonClicked()));
+
+    // Connect ControlIQ signals to MainWindow slots
+    connect(controlIQ, SIGNAL(immediateDoseDelivered()), this, SLOT(onImmediateDoseDelivered()));
+    connect(controlIQ, SIGNAL(extendedDoseCompleted()), this, SLOT(onExtendedDoseCompleted()));
+
+    connect(ui->resumeBolusButton, SIGNAL(released()), this, SLOT(onResumeBolusButtonClicked()));
+    connect(ui->pauseBolusButton, SIGNAL(released()), this, SLOT(onPauseBolusButtonClicked()));
+    connect(ui->stopBolusButton,  SIGNAL(released()), this, SLOT(onStopBolusButtonClicked()));
+
 }
 
 // Destructor
 MainWindow::~MainWindow()
 {
-    delete profileManager;
+   // delete profileManager;
+    delete bolusCalc;
+    delete controlIQ;
     delete ui;
     delete logger;
 }
@@ -431,6 +450,18 @@ void MainWindow::onCalculateDoseButtonClicked()
 
 void MainWindow::onConfirmBolusButtonClicked()
 {
+    if (!controlIQ->isGlucoseLevelSafe()) {
+        QMessageBox::warning(this, "Unsafe Glucose Level", "Blood glucose level is too low for safe bolus delivery. Please wait until it recovers.");
+        return;
+    }
+
+    // Cannot start new bolus if one is already in progress or paused
+    BolusDeliveryStatus status = controlIQ->getBolusStatus();
+    if (status == BolusDeliveryStatus::RUNNING || status == BolusDeliveryStatus::PAUSED) {
+        QMessageBox::warning(this, "Bolus In Progress", "A bolus is already in progress or paused. Please complete or cancel the current bolus before starting a new one.");
+        return;
+    }
+
     logger->logEvent("Bolus confirmation initiated.");
     qDebug() << "Bolus confirmation initiated.";
 
@@ -450,8 +481,7 @@ void MainWindow::onConfirmBolusButtonClicked()
     if (immediatePercent + extendedPercent != 100) {
         logger->logEvent("Bolus confirmation failed: The sum of immediate and extended percentages does not equal 100.");
         qDebug() << "Bolus confirmation failed: Percentages do not add up to 100.";
-        QMessageBox::warning(this, "Invalid Input",
-                             "The sum of the immediate and extended percentages must equal 100.");
+        QMessageBox::warning(this, "Invalid Input", "The sum of the immediate and extended percentages must equal 100.");
         return;
     }
 
@@ -480,13 +510,48 @@ void MainWindow::onConfirmBolusButtonClicked()
     result += QString("Total Insulin Administered: %1 units")
                   .arg(bolusCalc->getTotalBolusAfterIOB(), 0, 'f', 0);
 
-    // Log the successful bolus confirmation with the calculated details
-    logger->logEvent("Bolus confirmation successful: " + result);
-    qDebug() << "Bolus confirmation successful:" << result;
+    logger->logEvent("Bolus confirmation successful: " + result); // Log the successful bolus confirmation with the calculated detail
+    QMessageBox::information(this, "Bolus Calculation", result); // Display the results in an information popup
 
-    // Display the results in an information popup
-    QMessageBox::information(this, "Bolus Calculation", result);
+    // Update ControlIQ with the latest bolus calculator data
+    controlIQ->fetchBolusData(*bolusCalc);
+    controlIQ->linkCurrentBloodGlucoseLevel(*bolusCalc);
+    controlIQ->fetchCurrentProfile(*bolusCalc);
+
+    // Start Bolus
+    controlIQ->startBolus();
+
+    resetBolusCalculatorUI();
+
+    // Update home screen UI profile
+    QString currentProfileText = ui->profilesComboBox->currentText();
+    if (currentProfileText.trimmed().isEmpty()) {
+        ui->profileValue->setText("Default Profile");
+    } else {
+        ui->profileValue->setText(currentProfileText);
+    }
 }
+
+void MainWindow::resetBolusCalculatorUI()
+{
+    // Clear the input fields
+    ui->bloodGlucoseLevelValue->setValue(0.0);
+    ui->carbohydratesValue->setValue(0.0);
+    ui->suggestedDoseValue->clear();
+    ui->overrideDoseValue->setValue(0.0);
+
+    // Reset these fields to zero or other defaults
+    ui->quickBolusPercent->setValue(0);
+    ui->extendedBolusPercent->setValue(0);
+    ui->extendedBolusHours->setValue(0);
+
+    // Disable the override dose, quick bolus, and extended bolus fields
+    ui->overrideDoseValue->setEnabled(false);
+    ui->quickBolusPercent->setEnabled(false);
+    ui->extendedBolusPercent->setEnabled(false);
+    ui->extendedBolusHours->setEnabled(false);
+}
+
 
 void MainWindow::showChargerPopup()
 {
@@ -505,4 +570,117 @@ void MainWindow::showChargerPopup()
     QLabel *label = new QLabel("Battery is 0%. Please connect the charger.", batteryPopup);
     layout->addWidget(label);
     batteryPopup->show();
+}
+
+void MainWindow::onControlIQTimerTimeout()
+{
+    controlIQ->mimicGlucoseSpike(); // Mimic natural glucose spik
+    controlIQ->monitorGlucoseLevel(); // Monitor glucose level and deliver basal insulin accordingly
+    controlIQ->deliverExtendedBolus(); // Deliver extended bolus insulin if a bolus has been started --> If no bolus running function will return immediately
+
+    double currentBG = controlIQ->getCurrentBloodGlucose();
+
+    // Update BG Level
+    ui->glucoseLevel->setText(QString::number(currentBG));
+
+    // Update IOB
+    controlIQ->simulateIOBFluctuation();
+    ui->iobValue->setText(QString::number(controlIQ->getIOB(), 'f', 1));
+
+    // Update CGM graph
+    timeCounter++;
+    cgmSeries->append(timeCounter, currentBG);
+
+    // Show the last 20 time units
+    if (timeCounter > 20) {
+        axisX->setRange(timeCounter - 20, timeCounter);
+    } else {
+        axisX->setRange(0, 20);
+    }
+
+    // Update Insulin Fill Gauge
+    controlIQ->simulateInsulinFillGaugeFluctuation();
+
+    int insulinLevel = controlIQ->getInsulinFillGauge();
+    ui->insulinFillGaugeValue->setText(QString::number(insulinLevel));
+    if (insulinLevel <= 0 && !insulinPopup) {
+        insulinPopup = new QDialog(this);
+        insulinPopup->setModal(true);
+        insulinPopup->setWindowTitle("Low Insulin Warning");
+
+        // Create a vertical layout for the dialog.
+        QVBoxLayout *layout = new QVBoxLayout(insulinPopup);
+
+        // Add a label with the warning message.
+        QLabel *warningLabel = new QLabel("The insulin fill gauge is empty.\nPlease refill the insulin.", insulinPopup);
+        layout->addWidget(warningLabel);
+
+        // Add a "Refill Insulin" button.
+        QPushButton *refillButton = new QPushButton("Refill Insulin", insulinPopup);
+        layout->addWidget(refillButton);
+
+        connect(refillButton, SIGNAL(released()), this, SLOT(onRefillInsulinClicked()));
+
+        insulinPopup->setLayout(layout);
+        insulinPopup->exec(); // Block until the user responds.
+    }
+}
+
+
+void MainWindow::onFetchFromCGMButtonClicked()
+{
+    // Get the current glucose level from CGM
+    double currentGlucose = bolusCalc->fetchCurrentGlucoseLevelFromCGM();
+    double randCarb = controlIQ->generateRandomDouble();
+    ui->bloodGlucoseLevelValue->setValue(currentGlucose);
+    ui->carbohydratesValue->setValue(randCarb);
+
+}
+
+void MainWindow::onImmediateDoseDelivered()
+{
+    QMessageBox::information(this, "Bolus Update", "Immediate insulin dose delivered. Starting extended insulin delivery (if applicable).");
+}
+
+void MainWindow::onExtendedDoseCompleted()
+{
+    QMessageBox::information(this, "Bolus Update", "Extended insulin delivery completed!");
+}
+
+void MainWindow::onRefillInsulinClicked()
+{
+    // Reset the insulin fill gauge to 250 (its maximum)
+    controlIQ->setInsulinFillGauge(250);
+
+    // Update the UI
+    ui->insulinFillGaugeValue->setText(QString::number(250));
+
+    // Close and delete the popup
+    if (insulinPopup) {
+        insulinPopup->close();
+        delete insulinPopup;
+        insulinPopup = nullptr;
+    }
+}
+
+void MainWindow::onResumeBolusButtonClicked()
+{
+    // Check if the blood glucose level is safe before resuming bolus.
+    if (!controlIQ->isGlucoseLevelSafe()) {
+        QMessageBox::warning(this, "Unsafe Glucose Level", "Blood glucose is too low. Cannot resume bolus delivery.");
+        return;
+    }
+    controlIQ->resumeBolus();
+}
+
+void MainWindow::onPauseBolusButtonClicked()
+{
+    controlIQ->userPaused = true;
+    controlIQ->pauseBolus();
+}
+
+void MainWindow::onStopBolusButtonClicked()
+{
+    controlIQ->suspendBolus();
+    QMessageBox::warning(this, "Bolus Stopped", "Bolus STOPPED");
 }

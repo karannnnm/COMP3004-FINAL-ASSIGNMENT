@@ -90,7 +90,7 @@ void USBConnection::simulateBatteryDrain() {
     if (!isCharging && batteryLevel > 0) {
         if (!drainTimer->isActive()) {
             qDebug() << "Starting battery drain simulation.";
-            drainTimer->start(1000);
+            drainTimer->start(5000);
         }
     } else {
         qDebug() << "simulateBatteryDrain() not started: either charging or battery is empty.";
@@ -101,7 +101,7 @@ void USBConnection::simulateBatteryDrain() {
 void USBConnection::reduceBatteryLevel() {
     if (!isCharging && batteryLevel > 0) {
         batteryLevel -= 1;
-        qDebug() << "Battery level is now at:" << batteryLevel << "%";
+        //qDebug() << "Battery level is now at:" << batteryLevel << "%";
 
         // Stop the drain timer if the battery is fully drained.
         if (batteryLevel <= 0) {

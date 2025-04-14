@@ -3,6 +3,9 @@
 #include <iostream>
 #include "BolusCalculator.h"
 #include "Profile.h"
+#include <QDebug>
+#include <random>
+
 using namespace std;
 
 ControlIQ::ControlIQ() {}
@@ -14,6 +17,7 @@ void ControlIQ::fetchBolusData(const BolusCalculator& bolusCalculator) {
     extendedDose = bolusData[1];
     extendedDosePerHour = bolusData[2];
     durationOfExtendedBolus =bolusData[3];
+    IOB = bolusData[4];
     // currentBloodGlucoseLevel = &bolusData[4];
 }
 
@@ -29,10 +33,13 @@ void ControlIQ::fetchCurrentProfile(const BolusCalculator& bolusCalculator){
     if (profile)
     {
         this->currentProfile = profile;
-    }else{
-        cout<<"Couldnt load profile from the Bolus class"<<endl;
+    } else {
+        //on program startup --> use default profile
+        static Profile defaultProfile("Default Profile", 1.4, 1, 1, 5);
+        currentProfile = &defaultProfile;
+        cout<<"Loaded the default profile. "<<endl;
     }
-} 
+}
 
 bool ControlIQ::isGlucoseLevelSafe () const{
     if (!currentBloodGlucoseLevel) return false;
@@ -49,7 +56,7 @@ bool ControlIQ::isGlucoseLevelSafe () const{
 
 void ControlIQ::mimicGlucoseSpike() {
     double oldLevel = *currentBloodGlucoseLevel;
-    *currentBloodGlucoseLevel += 0.012;
+    *currentBloodGlucoseLevel += 0.105;
     
     cout << "Glucose increased from " << oldLevel << " to " << *currentBloodGlucoseLevel << " mmol/L" << endl;
     
@@ -79,40 +86,43 @@ void ControlIQ::startBolus(){
 
     if (!isGlucoseLevelSafe())
     {
-        if (bolusStatus == BolusDeliveryStatus::RUNNING)
+        if (bolusStatus != BolusDeliveryStatus::PAUSED && bolusStatus != BolusDeliveryStatus::SUSPENDED)
         {
             pauseBolus();
         }
         return;
     }
   
-    if (bolusStatus != BolusDeliveryStatus::NOT_STARTED && bolusStatus != BolusDeliveryStatus::PAUSED){
-        cout<<"Bolus seems suspended !!"<<endl;
+    if (bolusStatus != BolusDeliveryStatus::NOT_STARTED && bolusStatus != BolusDeliveryStatus::PAUSED && bolusStatus != BolusDeliveryStatus::COMPLETED){
+        qDebug()<<"Bolus seems suspended !!"<<endl;
         return;
     }
-
-    
     
     //deliver the immediate bolus dose
-    if (bolusStatus == BolusDeliveryStatus::NOT_STARTED)
+    if (bolusStatus == BolusDeliveryStatus::NOT_STARTED || bolusStatus == BolusDeliveryStatus::COMPLETED)
     { 
         //deliver immediate dose. decrease more glucose since its a big dose.
+        qDebug()<<"Starting  immediate bolus";
         double glucoseLevelDrop = immediateDose*2.5*(currentProfile->getCorrectionFactor() / 100);
         // cout<<glucoseLevelDrop<<endl;
         *currentBloodGlucoseLevel -= glucoseLevelDrop;
-        cout<<"updated bg level after immediate bolus dose has been given = "<<*currentBloodGlucoseLevel<<endl;
-        cout<<"Immediate dose left to be administered = "<<immediateDose<<endl;
-        
+        this->IOB += immediateDose;
+        this->insulinFillGauge -= immediateDose;
+
+        qDebug()<<"updated bg level after immediate bolus dose has been given = "<<*currentBloodGlucoseLevel<<endl;
+        qDebug()<<"Immediate dose left to be administered = "<<immediateDose<<endl;
+
+        emit immediateDoseDelivered();  // Notify mainwindow that the immediate dose has been delivered.
         
         // start delivering the extended dose.
-        bolusDelivered  =0;
+        bolusDelivered = 0;
         totalBolusToDeliver = extendedDose;
         // cout<<totalBolusToDeliver<<endl;
         extendedDurationSeconds = durationOfExtendedBolus * 3600;   //convert duration to secs
 
-        cout << "Starting extended bolus:" << endl;
-        cout << "Total to deliver: " << totalBolusToDeliver << " units" << endl;
-        cout << "Duration: " << extendedDurationSeconds << " seconds" << endl;
+        qDebug() << "Starting extended bolus:" << endl;
+        qDebug() << "Total to deliver: " << totalBolusToDeliver << " units" << endl;
+        qDebug() << "Duration: " << extendedDurationSeconds << " seconds" << endl;
 
     }
     immediateDose = 0;
@@ -122,11 +132,11 @@ void ControlIQ::startBolus(){
 
 void ControlIQ::deliverExtendedBolus() {
 
-
-    if (bolusStatus == BolusDeliveryStatus::NOT_STARTED)
+    if (bolusStatus == BolusDeliveryStatus::NOT_STARTED || bolusStatus == BolusDeliveryStatus::COMPLETED)
     {
-        cout<<"'''''''''''''''First delivering the immediate dose"<<endl;
-        startBolus();
+        //qDebug()<<"'''''''''''''''First delivering the immediate dose"<<endl;
+        qDebug()<<"[Extended Bolus] not started";
+        //startBolus();
         return;
     }
     
@@ -137,23 +147,21 @@ void ControlIQ::deliverExtendedBolus() {
         }
         return;
     }
-    else if (isGlucoseLevelSafe() && bolusStatus == BolusDeliveryStatus::PAUSED)
+    else if (isGlucoseLevelSafe() && bolusStatus == BolusDeliveryStatus::PAUSED && !userPaused)
     {
         resumeBolus();
     }
 
-
-
     // Check if there's any extended bolus to deliver
     if (extendedDose <= 0 || durationOfExtendedBolus <= 0 || extendedDosePerHour <= 0) {
-        cout << "[Extended Bolus] No extended bolus remaining to deliver." << endl;
+        qDebug() << "[Extended Bolus] No extended bolus remaining to deliver." << endl;
         bolusStatus = BolusDeliveryStatus::COMPLETED;
         return;
     }
 
     // Check if bolus can be delivered based on status
     if (bolusStatus != BolusDeliveryStatus::RUNNING) {
-        cout << "Cannot deliver extended bolus. Status = " << static_cast<int>(bolusStatus) << endl;
+        qDebug() << "Cannot deliver extended bolus. Status = " << static_cast<int>(bolusStatus) << endl;
         return;
     }
 
@@ -166,6 +174,8 @@ void ControlIQ::deliverExtendedBolus() {
         insulinToDeliver = extendedDose;
     }
 
+    this->IOB += extendedDosePerHour/2;
+    this->insulinFillGauge -= extendedDosePerHour/2;
     // deliver insulin and update remaining amount
     extendedDose -= insulinToDeliver;
     
@@ -177,31 +187,32 @@ void ControlIQ::deliverExtendedBolus() {
     durationOfExtendedBolus -= hoursPerInterval;
 
     
-    cout << "\n====== Extended Bolus Delivery Update ======" << endl;
-    cout << "Insulin delivered this interval: " << insulinToDeliver << " units" << endl;
-    cout << "Remaining extended dose: " << extendedDose << " units" << endl;
-    cout << "Glucose dropped by: " << glucoseDrop << " mmol/L" << endl;
-    cout << "Current glucose level: " << *currentBloodGlucoseLevel << " mmol/L" << endl;
-    cout << "Remaining duration: " << durationOfExtendedBolus << " hours" << endl;
+    qDebug() << "\n====== Extended Bolus Delivery Update ======" << endl;
+    qDebug() << "Insulin delivered this interval: " << insulinToDeliver << " units" << endl;
+    qDebug() << "Remaining extended dose: " << extendedDose << " units" << endl;
+    qDebug() << "Glucose dropped by: " << glucoseDrop << " mmol/L" << endl;
+    qDebug() << "Current glucose level: " << *currentBloodGlucoseLevel << " mmol/L" << endl;
+    qDebug() << "Remaining duration: " << durationOfExtendedBolus << " hours" << endl;
 
     //  if extended bolus is complete
     if (durationOfExtendedBolus <= 0 || extendedDose <= 0) {
         bolusStatus = BolusDeliveryStatus::COMPLETED;
         durationOfExtendedBolus = 0;
         extendedDose = 0;
-        cout << "\n[Extended Bolus] Delivery completed!" << endl;
+        qDebug() << "\n[Extended Bolus] Delivery completed!" << endl;
+        emit extendedDoseCompleted();  // Notify mainwindow that extended dose delivery is finished.z
     }
 }
 
 void ControlIQ::pauseBolus(){
     if (bolusStatus != BolusDeliveryStatus::RUNNING)
     {
-        cout << "::::::::::::: Cannot pause bolus - current status: " << static_cast<int>(bolusStatus) << endl;
+        qDebug() << "::::::::::::: Cannot pause bolus - current status: " << static_cast<int>(bolusStatus) << endl;
         return;
     }
     
     bolusStatus = BolusDeliveryStatus::PAUSED;
-    cout<<":::::::::::::::::: Bolus successfully paused !!"<<endl;
+    qDebug()<<":::::::::::::::::: Bolus successfully paused !!"<<endl;
 }
 
 
@@ -209,18 +220,19 @@ void ControlIQ::resumeBolus(){
 
     if (!isGlucoseLevelSafe())
     {
-        cout<<"Cannot Resume Bolus - glucose level tooo low "<<endl;
+        qDebug()<<"Cannot Resume Bolus - glucose level too low "<<endl;
         return;
     }
     
 
     if (bolusStatus != BolusDeliveryStatus::PAUSED)
     {
-        cout << ":::::::::  Cannot resume bolus - current status: " << static_cast<int>(bolusStatus) << endl;
+        qDebug() << ":::::::::  Cannot resume bolus - current status: " << static_cast<int>(bolusStatus) << endl;
         return;
     }
+    userPaused = false;
     bolusStatus = BolusDeliveryStatus::RUNNING;
-    cout<<"::::::::::::::: Bolus successfully resumeddd"<<endl;       
+    qDebug()<<"::::::::::::::: Bolus successfully resumeddd"<<endl;
 }
 
 void ControlIQ::suspendBolus() {
@@ -248,7 +260,6 @@ void ControlIQ::suspendBolus() {
     
 
 
-
 // < 3.9	     Suspend basal delivery
 // 3.9 - 6.5	 Lower basal rate slightly
 // 6.5 - 10	     Normal basal delivery
@@ -261,7 +272,7 @@ void ControlIQ::deliverBasal(double insulinAmount){
         return;
     }
 
-    double glucoseToReduce = insulinAmount * this->currentProfile->getCorrectionFactor();
+    double glucoseToReduce = insulinAmount * 10 * this->currentProfile->getCorrectionFactor();
     *currentBloodGlucoseLevel -= glucoseToReduce;
     
 
@@ -274,9 +285,11 @@ void ControlIQ::deliverBasal(double insulinAmount){
 
 void ControlIQ::monitorGlucoseLevel() {
     double bg = *currentBloodGlucoseLevel;
+    //qDebug("test 0");
     double baseRate = currentProfile->getBasalRate();   // units/hour
+    //qDebug("test 0.5");
     double insulinPerInterval = baseRate / 120.0;      // For 30-second intervals (120 intervals per hour)
-
+    //qDebug("test 1");
     cout << "\n====== Glucose Monitoring ======" << endl;
     cout << "Current BG: " << bg << " mmol/L" << endl;
     cout << "Base basal rate: " << baseRate << " units/hour" << endl;
@@ -292,19 +305,19 @@ void ControlIQ::monitorGlucoseLevel() {
 
     // Determine how much basal to give based on glucose level
     if (bg < 3.9) {
-        cout << "BG too low - Suspending basal delivery" << endl;
+        qDebug() << "BG too low - Suspending basal delivery" << endl;
         return;  // No insulin delivered
     } 
     else if (bg >= 3.9 && bg < 6.5) {
-        cout << "BG low - Reducing basal rate by 35%" << endl;
+        qDebug() << "BG low - Reducing basal rate by 35%" << endl;
         deliverBasal(insulinPerInterval * 0.65);
     }
     else if (bg >= 6.5 && bg <= 10.0) {
-        cout << "BG normal - Delivering standard basal rate" << endl;
+        qDebug() << "BG normal - Delivering standard basal rate" << endl;
         deliverBasal(insulinPerInterval);
     }
     else { // bg > 10.0
-        cout << "BG high - Increasing basal rate by 25%" << endl;
+        qDebug() << "BG high - Increasing basal rate by 25%" << endl;
         deliverBasal(insulinPerInterval * 1.25);
     }
 }
@@ -345,4 +358,50 @@ double returnCurrentBloodGlucoseLevelToControlIQ(const ControlIQ& controlIQ) {
         cout << "Error: currentBloodGlucoseLevel is not linked!" << endl;
         return -1;
     }
+}
+
+double ControlIQ::getIOB()
+{
+    return IOB;
+}
+
+double ControlIQ::getInsulinFillGauge()
+{
+    return insulinFillGauge;
+}
+
+double ControlIQ::setInsulinFillGauge(double insulinValue)
+{
+    insulinFillGauge = insulinValue;
+}
+
+
+BolusDeliveryStatus ControlIQ::getBolusStatus()
+{
+    return bolusStatus;
+}
+
+void ControlIQ::simulateIOBFluctuation() {
+    if (bolusStatus == BolusDeliveryStatus::COMPLETED) {
+
+        this->IOB = max(0.0, this->IOB - 0.5);
+    }
+    else if (bolusStatus == BolusDeliveryStatus::RUNNING) {
+
+        this->IOB = max(0.0, this->IOB - 0.1);
+    }
+}
+
+void ControlIQ::simulateInsulinFillGaugeFluctuation() {
+    if (bolusStatus != BolusDeliveryStatus::RUNNING) {
+        this->insulinFillGauge = max(0.0, this->insulinFillGauge - 1);
+    }
+}
+
+double ControlIQ::generateRandomDouble(double min, double max) {
+    // Use C++11 random number generation
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> dis(min, max);
+    return dis(gen);
 }
