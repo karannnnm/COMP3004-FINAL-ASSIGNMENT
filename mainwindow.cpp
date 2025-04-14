@@ -30,9 +30,6 @@ MainWindow::MainWindow(QWidget *parent)
     // Instantiate BolusCalculator and pass in the existing ProfileManager reference
     bolusCalc = new BolusCalculator(*profileManager);
 
-
-
-
     // Instantiate ControlIQ
     controlIQ  = new ControlIQ();
     //controlIQ->fetchBolusData(*bolusCalc);
@@ -45,18 +42,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(controlIQTimer, SIGNAL(timeout()), this, SLOT(onControlIQTimerTimeout()));
     controlIQTimer->start(5000);
 
-
-
-
-
     // Initialize logger with the log widget from the UI
     logger = new Logger(ui->log);
 
     // Instantiate the battery simulation (USBConnection) and let MainWindow be its parent.
     battery = new USBConnection(this);
-
-    // Start battery drain immediately
-    battery->simulateBatteryDrain();
+    battery->simulateBatteryDrain(); // Start battery drain immediately
 
     // Create a QTimer to update the battery display every 1 second.
     QTimer *batteryTimer = new QTimer(this);
@@ -64,32 +55,27 @@ MainWindow::MainWindow(QWidget *parent)
     batteryTimer->start(1000);
 
     // Set up the CGM chart
-    QLineSeries *series = new QLineSeries();
-    series->append(0, 3.4);
-    series->append(1, 3.2);
-    series->append(2, 3.0);
-    series->append(3, 3.2);
-    series->append(4, 20);
-
+    cgmSeries = new QLineSeries();
     QChart *chart = new QChart();
     chart->legend()->hide();
-    chart->addSeries(series);
+    chart->addSeries(cgmSeries);
 
     // Configure chart axes
-    QValueAxis *axisY = new QValueAxis;
+    axisY = new QValueAxis;
     axisY->setRange(2, 22); // Glucose levels range from 2 to 22 mmol/L.
     axisY->setTitleText("Glucose Level (mmol/L)");
     chart->addAxis(axisY, Qt::AlignLeft);
-    series->attachAxis(axisY);
+    cgmSeries->attachAxis(axisY);
 
-    QValueAxis *axisX = new QValueAxis;
+    axisX = new QValueAxis;
     axisX->setTitleText("Time");
     chart->addAxis(axisX, Qt::AlignBottom);
-    series->attachAxis(axisX);
+    cgmSeries->attachAxis(axisX);
 
     chart->setTitle("CGM Data");
     ui->chartView->setChart(chart);
     ui->chartView->setRenderHint(QPainter::Antialiasing);
+
 
     // Set up options drop-down menu
     QMenu *dropDownMenu = new QMenu(this);
@@ -127,6 +113,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->calculateDoseButton, SIGNAL(released()), this, SLOT(onCalculateDoseButtonClicked()));
     connect(ui->confirmBolusButton, SIGNAL(released()), this, SLOT(onConfirmBolusButtonClicked()));
     connect(ui->fetchCGMButton, SIGNAL(clicked()), this, SLOT(onFetchFromCGMButtonClicked()));
+
+    // Connect ControlIQ signals to MainWindow slots
+    connect(controlIQ, SIGNAL(immediateDoseDelivered()), this, SLOT(onImmediateDoseDelivered()));
+    connect(controlIQ, SIGNAL(extendedDoseCompleted()), this, SLOT(onExtendedDoseCompleted()));
 
 }
 
@@ -568,12 +558,26 @@ void MainWindow::onControlIQTimerTimeout()
     //qDebug("monitor reached ");
 
     controlIQ->deliverExtendedBolus(); // Deliver extended bolus insulin if a bolus has been started --> If no bolus running function will return immediately
-    ///qDebug("extended reached ");
+    //qDebug("extended reached ");
+
+    double currentBG = controlIQ->getCurrentBloodGlucose();
 
     // Update UI
-    ui->glucoseLevel->setText(QString::number(controlIQ->getCurrentBloodGlucose()));
+    ui->glucoseLevel->setText(QString::number(currentBG));
     ui->profileValue->setText(QString::fromStdString(controlIQ->currentProfile->getName()));
     //ui->iobValue->setText(); ??
+
+    // Update CGM graph
+    timeCounter++;
+    cgmSeries->append(timeCounter, currentBG);
+
+    // Show the last 20 time units:
+    if (timeCounter > 20) {
+        axisX->setRange(timeCounter - 20, timeCounter);
+    } else {
+        axisX->setRange(0, 20);
+    }
+
 }
 
 
@@ -587,4 +591,14 @@ void MainWindow::onFetchFromCGMButtonClicked()
 
     // Optionally, log or debug print the value
     qDebug() << "Fetched CGM Glucose Level:" << currentGlucose;
+}
+
+void MainWindow::onImmediateDoseDelivered()
+{
+    QMessageBox::information(this, "Bolus Update", "Immediate insulin dose delivered. Starting extended insulin delivery.");
+}
+
+void MainWindow::onExtendedDoseCompleted()
+{
+    QMessageBox::information(this, "Bolus Update", "Extended insulin delivery completed!");
 }

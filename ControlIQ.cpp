@@ -105,7 +105,8 @@ void ControlIQ::startBolus(){
         *currentBloodGlucoseLevel -= glucoseLevelDrop;
         qDebug()<<"updated bg level after immediate bolus dose has been given = "<<*currentBloodGlucoseLevel<<endl;
         qDebug()<<"Immediate dose left to be administered = "<<immediateDose<<endl;
-        
+
+        emit immediateDoseDelivered();  // Notify mainwindow that the immediate dose has been delivered.
         
         // start delivering the extended dose.
         bolusDelivered = 0;
@@ -193,6 +194,7 @@ void ControlIQ::deliverExtendedBolus() {
         durationOfExtendedBolus = 0;
         extendedDose = 0;
         qDebug() << "\n[Extended Bolus] Delivery completed!" << endl;
+        emit extendedDoseCompleted();  // Notify mainwindow that extended dose delivery is finished.z
     }
 }
 
@@ -350,3 +352,4 @@ double returnCurrentBloodGlucoseLevelToControlIQ(const ControlIQ& controlIQ) {
         return -1;
     }
 }
+

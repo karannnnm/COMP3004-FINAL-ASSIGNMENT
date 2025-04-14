@@ -5,6 +5,8 @@
 
 
 #include <vector>
+#include <QObject>
+
 class Profile;
 class BolusCalculator;
 
@@ -55,7 +57,8 @@ enum class BolusDeliveryStatus{
 */
 
 
-class ControlIQ {
+class ControlIQ : public QObject {
+    Q_OBJECT
 public:
 
     friend double returnCurrentBloodGlucoseLevelToControlIQ(const ControlIQ& controlIQ);
@@ -96,12 +99,7 @@ public:
 
     Profile* currentProfile = nullptr;
 
-
-
     // double getCurrentBloodGlucose();
-
-
-
 
     // Method to display the received bolus data (for debugging)
     void displayBolusData() const;
@@ -128,6 +126,10 @@ public:
     double totalBolusToDeliver = 0.0;
     double extendedBolus = 0.0;
     double extendedDurationSeconds = 0.0;
+
+signals:
+    void immediateDoseDelivered();
+    void extendedDoseCompleted();
 
 };
 

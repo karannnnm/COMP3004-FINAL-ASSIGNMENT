@@ -3,6 +3,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QtCharts/QChartView>
+QT_CHARTS_USE_NAMESPACE
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QChart>
+#include <QtCharts/QValueAxis>
 #include <QMainWindow>
 #include <QDialog> // added include for QDialog
 #include "ProfileManager.h"
@@ -39,6 +44,11 @@ private:
     USBConnection* battery;
     QDialog *batteryPopup = nullptr; // added member variable
 
+    QLineSeries *cgmSeries;      // Persistent pointer for the CGM data series
+    QValueAxis *axisX;           // X-axis for the time
+    QValueAxis *axisY;           // Y-axis for the blood glucose level
+    int timeCounter = 0;
+
     // Helper functions
     void displayProfileDetails(const Profile &profile); // Displays the details of the provided profile in the UI
     void setDetailsReadOnly(bool readOnly); // Sets the read-only state for profile detail fields
@@ -71,6 +81,9 @@ private slots:
     void checkBatteryAfterDelay();
     void onControlIQTimerTimeout();
     void onFetchFromCGMButtonClicked();
+
+    void onImmediateDoseDelivered();
+    void onExtendedDoseCompleted();
 
 
 };
