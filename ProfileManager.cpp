@@ -4,7 +4,12 @@
 
 // Add a new profile
 void ProfileManager::addProfile(const Profile& profile) {
-    profiles.push_back(profile);
+    try {
+        profiles.push_back(profile);
+    } catch (const std::bad_alloc& e) {
+        cout << "Failed to allocate memory for new profile" << endl;
+        throw;
+    }
 }
 
 // Get a profile by name

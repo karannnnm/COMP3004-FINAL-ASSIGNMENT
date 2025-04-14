@@ -77,6 +77,7 @@ public:
 
     double getCurrentBloodGlucose();
     double getDurationOfExtendedBolus();
+    BolusDeliveryStatus getBolusStatus();
     
     
     
@@ -105,10 +106,19 @@ public:
     void displayBolusData() const;
     void displayProfileData() const;
 
-    
-    private:
+    double getIOB();
+    double getInsulinFillGauge();
+    double setInsulinFillGauge(double);
+    void simulateIOBFluctuation();
+    void simulateInsulinFillGaugeFluctuation();
     bool isGlucoseLevelSafe () const;
+    double generateRandomDouble(double min = 30.0, double max = 60.0);
+    bool userPaused = false;  // indicates a user-initiated pause
+    
+private:
     double* currentBloodGlucoseLevel;
+    double IOB;
+    double insulinFillGauge = 250.0;
     
     //bolus data coming from BolusCalculator
     double immediateDose = 0.0;
@@ -116,11 +126,7 @@ public:
     double extendedDosePerHour = 0.0;
     double durationOfExtendedBolus = 0; //in hours
 
-    
-    
-    //variables to manage the bolus delivery
     BolusDeliveryStatus bolusStatus = BolusDeliveryStatus::NOT_STARTED;
-
 
     double bolusDelivered = 0.0;
     double totalBolusToDeliver = 0.0;

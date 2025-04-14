@@ -118,12 +118,16 @@ MainWindow::MainWindow(QWidget *parent)
     connect(controlIQ, SIGNAL(immediateDoseDelivered()), this, SLOT(onImmediateDoseDelivered()));
     connect(controlIQ, SIGNAL(extendedDoseCompleted()), this, SLOT(onExtendedDoseCompleted()));
 
+    connect(ui->resumeBolusButton, SIGNAL(released()), this, SLOT(onResumeBolusButtonClicked()));
+    connect(ui->pauseBolusButton, SIGNAL(released()), this, SLOT(onPauseBolusButtonClicked()));
+    connect(ui->stopBolusButton,  SIGNAL(released()), this, SLOT(onStopBolusButtonClicked()));
+
 }
 
 // Destructor
 MainWindow::~MainWindow()
 {
-    delete profileManager;
+   // delete profileManager;
     delete bolusCalc;
     delete controlIQ;
     delete ui;
@@ -446,6 +450,18 @@ void MainWindow::onCalculateDoseButtonClicked()
 
 void MainWindow::onConfirmBolusButtonClicked()
 {
+    if (!controlIQ->isGlucoseLevelSafe()) {
+        QMessageBox::warning(this, "Unsafe Glucose Level", "Blood glucose level is too low for safe bolus delivery. Please wait until it recovers.");
+        return;
+    }
+
+    // Cannot start new bolus if one is already in progress or paused
+    BolusDeliveryStatus status = controlIQ->getBolusStatus();
+    if (status == BolusDeliveryStatus::RUNNING || status == BolusDeliveryStatus::PAUSED) {
+        QMessageBox::warning(this, "Bolus In Progress", "A bolus is already in progress or paused. Please complete or cancel the current bolus before starting a new one.");
+        return;
+    }
+
     logger->logEvent("Bolus confirmation initiated.");
     qDebug() << "Bolus confirmation initiated.";
 
@@ -506,6 +522,14 @@ void MainWindow::onConfirmBolusButtonClicked()
     controlIQ->startBolus();
 
     resetBolusCalculatorUI();
+
+    // Update home screen UI profile
+    QString currentProfileText = ui->profilesComboBox->currentText();
+    if (currentProfileText.trimmed().isEmpty()) {
+        ui->profileValue->setText("Default Profile");
+    } else {
+        ui->profileValue->setText(currentProfileText);
+    }
 }
 
 void MainWindow::resetBolusCalculatorUI()
@@ -550,55 +574,113 @@ void MainWindow::showChargerPopup()
 
 void MainWindow::onControlIQTimerTimeout()
 {
-
-    controlIQ->mimicGlucoseSpike(); // Mimic natural glucose spike
-    //qDebug("mimic reached ");
-
+    controlIQ->mimicGlucoseSpike(); // Mimic natural glucose spik
     controlIQ->monitorGlucoseLevel(); // Monitor glucose level and deliver basal insulin accordingly
-    //qDebug("monitor reached ");
-
     controlIQ->deliverExtendedBolus(); // Deliver extended bolus insulin if a bolus has been started --> If no bolus running function will return immediately
-    //qDebug("extended reached ");
 
     double currentBG = controlIQ->getCurrentBloodGlucose();
 
-    // Update UI
+    // Update BG Level
     ui->glucoseLevel->setText(QString::number(currentBG));
-    ui->profileValue->setText(QString::fromStdString(controlIQ->currentProfile->getName()));
-    //ui->iobValue->setText(); ??
+
+    // Update IOB
+    controlIQ->simulateIOBFluctuation();
+    ui->iobValue->setText(QString::number(controlIQ->getIOB(), 'f', 1));
 
     // Update CGM graph
     timeCounter++;
     cgmSeries->append(timeCounter, currentBG);
 
-    // Show the last 20 time units:
+    // Show the last 20 time units
     if (timeCounter > 20) {
         axisX->setRange(timeCounter - 20, timeCounter);
     } else {
         axisX->setRange(0, 20);
     }
 
+    // Update Insulin Fill Gauge
+    controlIQ->simulateInsulinFillGaugeFluctuation();
+
+    int insulinLevel = controlIQ->getInsulinFillGauge();
+    ui->insulinFillGaugeValue->setText(QString::number(insulinLevel));
+    if (insulinLevel <= 0 && !insulinPopup) {
+        insulinPopup = new QDialog(this);
+        insulinPopup->setModal(true);
+        insulinPopup->setWindowTitle("Low Insulin Warning");
+
+        // Create a vertical layout for the dialog.
+        QVBoxLayout *layout = new QVBoxLayout(insulinPopup);
+
+        // Add a label with the warning message.
+        QLabel *warningLabel = new QLabel("The insulin fill gauge is empty.\nPlease refill the insulin.", insulinPopup);
+        layout->addWidget(warningLabel);
+
+        // Add a "Refill Insulin" button.
+        QPushButton *refillButton = new QPushButton("Refill Insulin", insulinPopup);
+        layout->addWidget(refillButton);
+
+        connect(refillButton, SIGNAL(released()), this, SLOT(onRefillInsulinClicked()));
+
+        insulinPopup->setLayout(layout);
+        insulinPopup->exec(); // Block until the user responds.
+    }
 }
 
 
 void MainWindow::onFetchFromCGMButtonClicked()
 {
-    // Call the function to get the current glucose level from CGM
+    // Get the current glucose level from CGM
     double currentGlucose = bolusCalc->fetchCurrentGlucoseLevelFromCGM();
-
-    // Display this value in the bloodGlucoseLevelValue QDoubleSpinBox
+    double randCarb = controlIQ->generateRandomDouble();
     ui->bloodGlucoseLevelValue->setValue(currentGlucose);
+    ui->carbohydratesValue->setValue(randCarb);
 
-    // Optionally, log or debug print the value
-    qDebug() << "Fetched CGM Glucose Level:" << currentGlucose;
 }
 
 void MainWindow::onImmediateDoseDelivered()
 {
-    QMessageBox::information(this, "Bolus Update", "Immediate insulin dose delivered. Starting extended insulin delivery.");
+    QMessageBox::information(this, "Bolus Update", "Immediate insulin dose delivered. Starting extended insulin delivery (if applicable).");
 }
 
 void MainWindow::onExtendedDoseCompleted()
 {
     QMessageBox::information(this, "Bolus Update", "Extended insulin delivery completed!");
+}
+
+void MainWindow::onRefillInsulinClicked()
+{
+    // Reset the insulin fill gauge to 250 (its maximum)
+    controlIQ->setInsulinFillGauge(250);
+
+    // Update the UI
+    ui->insulinFillGaugeValue->setText(QString::number(250));
+
+    // Close and delete the popup
+    if (insulinPopup) {
+        insulinPopup->close();
+        delete insulinPopup;
+        insulinPopup = nullptr;
+    }
+}
+
+void MainWindow::onResumeBolusButtonClicked()
+{
+    // Check if the blood glucose level is safe before resuming bolus.
+    if (!controlIQ->isGlucoseLevelSafe()) {
+        QMessageBox::warning(this, "Unsafe Glucose Level", "Blood glucose is too low. Cannot resume bolus delivery.");
+        return;
+    }
+    controlIQ->resumeBolus();
+}
+
+void MainWindow::onPauseBolusButtonClicked()
+{
+    controlIQ->userPaused = true;
+    controlIQ->pauseBolus();
+}
+
+void MainWindow::onStopBolusButtonClicked()
+{
+    controlIQ->suspendBolus();
+    QMessageBox::warning(this, "Bolus Stopped", "Bolus STOPPED");
 }

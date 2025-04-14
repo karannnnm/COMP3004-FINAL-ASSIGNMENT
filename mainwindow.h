@@ -48,6 +48,8 @@ private:
     QValueAxis *axisX;           // X-axis for the time
     QValueAxis *axisY;           // Y-axis for the blood glucose level
     int timeCounter = 0;
+    QDialog *insulinPopup = nullptr;
+
 
     // Helper functions
     void displayProfileDetails(const Profile &profile); // Displays the details of the provided profile in the UI
@@ -84,7 +86,11 @@ private slots:
 
     void onImmediateDoseDelivered();
     void onExtendedDoseCompleted();
+    void onRefillInsulinClicked();
 
+    void onResumeBolusButtonClicked();
+    void onPauseBolusButtonClicked();
+    void onStopBolusButtonClicked();
 
 };
 

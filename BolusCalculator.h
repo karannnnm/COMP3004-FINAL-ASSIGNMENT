@@ -147,6 +147,7 @@ bool areInputsValid() const;
     double getTotalBolusAfterIOB();
     double getImmediateDose();
     double getExtendedDosePerHour();
+    double fetchCarbsFromCGM();
     
 
     private:
@@ -154,7 +155,7 @@ bool areInputsValid() const;
     
     // input variables for bolus calc that user will manually enter
     double currentBloodGlucoseLevel = 7.6;
-    double totalCarbs;
+    double totalCarbs = 50.0;
     double IOB = 5.0;
 
     //inputs variables for bolus calc coming from Profile
