@@ -89,8 +89,8 @@ public:
     // attach this function to qtimer and call it every 30 seconds.
     void deliverExtendedBolus();
     void deliverBasal(double insulinAmount);
-    void predictBolusRequired();
-    void deliverImmediateCorrectionBolus(double insulinAmt);
+    
+
     //basal related functions
     //this function will always be running for the lifetime of the simulation.
     // will continuously monitor the bglevel and based on it deliver the basal insulin
@@ -115,10 +115,8 @@ public:
     double generateRandomDouble(double min = 30.0, double max = 60.0);
     bool userPaused = false;  // indicates a user-initiated pause
     
-    double* currentBloodGlucoseLevel;
-
-
 private:
+    double* currentBloodGlucoseLevel;
     double IOB;
     double insulinFillGauge = 250.0;
     

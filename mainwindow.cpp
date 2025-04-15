@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     , bolusCalc(nullptr)
     , controlIQ(nullptr)
     , controlIQTimer(nullptr)
+    , simulationCounter(0)
     , batteryPopup(nullptr)
 {
     ui->setupUi(this);
@@ -134,6 +135,15 @@ MainWindow::~MainWindow()
     delete logger;
 }
 
+QString MainWindow::getSimulatedTimestamp() {
+    int totalMinutes = simulationCounter * 5;
+    int hours = totalMinutes / 60;
+    int minutes = totalMinutes % 60;
+    return QString("%1:%2min")
+            .arg(hours, 2, 10, QChar('0'))
+            .arg(minutes, 2, 10, QChar('0'));
+}
+
 // Updates the batteryValue label with the current battery level
 void MainWindow::updateBatteryDisplay()
 {
@@ -147,25 +157,27 @@ void MainWindow::updateBatteryDisplay()
 
     // Low battery warning
     static bool warningShown = false;
+
+    QString timestamp = getSimulatedTimestamp();
+
     if (level < 20 && !warningShown) {
-        warningShown = true;
-        logger->logEvent("Battery is below 20%. Please charge.");
-        qDebug() << "Battery is below 20%. Please charge.";
-        QMessageBox::warning(this, "Low Battery", "Battery is below 20%. Please charge.");
+           warningShown = true;
+           logger->logEvent("[" + timestamp + "] WARNING! Battery is below 20%. Please charge.");
+           qDebug() << "[" << timestamp << "] Warning: Battery is below 20%. Please charge.";
+           QMessageBox::warning(this, "Low Battery", "Battery is below 20%. Please charge.");
     } else if (level >= 20) {
-        warningShown = false;
+       warningShown = false;
     }
 
-    // Only log "fully charged" once, until battery level dips below 100 again
     static bool batteryFullLogged = false;
-    if (level == 100 && !batteryFullLogged) {
-        logger->logEvent("Battery fully charged. Charging stopped. Battery drain simulation resumed.");
-        qDebug() << "Battery fully charged. Charging stopped. Battery drain simulation resumed.";
-        batteryFullLogged = true;
-    } else if (level < 100) {
-        batteryFullLogged = false;
+        if (level == 100 && !batteryFullLogged) {
+            logger->logEvent("[" + timestamp + "] Battery fully charged. Charging stopped. Battery drain simulation resumed.");
+            qDebug() << "[" << timestamp << "] Battery fully charged. Charging stopped. Battery drain simulation resumed.";
+            batteryFullLogged = true;
+        } else if (level < 100) {
+            batteryFullLogged = false;
+        }
     }
-}
 
 // New slot: checks battery level after a delay
 void MainWindow::checkBatteryAfterDelay()
@@ -501,17 +513,17 @@ void MainWindow::onConfirmBolusButtonClicked()
         bolusCalc->calculateExtendedBolusDose();
     }
 
+    QString simulationTime = getSimulatedTimestamp();
     QString result;
-    result += QString("Immediate Insulin Dose: %1 units at meal time\n")
-                  .arg(bolusCalc->getImmediateDose(), 0, 'f', 1);
+
+    result += QString("Immediate Insulin Dose: %1 units at meal time\n").arg(bolusCalc->getImmediateDose(), 0, 'f', 1);
     result += QString("Extended Insulin Delivery: %1 units per hour for %2 hours\n")
                   .arg(bolusCalc->getExtendedDosePerHour(), 0, 'f', 2)
                   .arg(duration);
-    result += QString("Total Insulin Administered: %1 units")
-                  .arg(bolusCalc->getTotalBolusAfterIOB(), 0, 'f', 0);
+    result += QString("Total Insulin Administered: %1 units").arg(bolusCalc->getTotalBolusAfterIOB(), 0, 'f', 0);
 
-    logger->logEvent("Bolus confirmation successful: " + result); // Log the successful bolus confirmation with the calculated detail
-    QMessageBox::information(this, "Bolus Calculation", result); // Display the results in an information popup
+    logger->logEvent("[" + simulationTime + "] Insulin delivery (manual) initiated. Details: " + result);
+    qDebug() << "[" << simulationTime << "] Insulin delivery (manual) initiated. Details:" << result;
 
     // Update ControlIQ with the latest bolus calculator data
     controlIQ->fetchBolusData(*bolusCalc);
@@ -531,6 +543,7 @@ void MainWindow::onConfirmBolusButtonClicked()
         ui->profileValue->setText(currentProfileText);
     }
 }
+
 
 void MainWindow::resetBolusCalculatorUI()
 {
@@ -574,11 +587,32 @@ void MainWindow::showChargerPopup()
 
 void MainWindow::onControlIQTimerTimeout()
 {
+    // Each timer event represents 5 minutes simulated interval
+    simulationCounter++;
+    QString timestamp = getSimulatedTimestamp();
+
     controlIQ->mimicGlucoseSpike(); // Mimic natural glucose spik
     controlIQ->monitorGlucoseLevel(); // Monitor glucose level and deliver basal insulin accordingly
     controlIQ->deliverExtendedBolus(); // Deliver extended bolus insulin if a bolus has been started --> If no bolus running function will return immediately
 
+
     double currentBG = controlIQ->getCurrentBloodGlucose();
+
+    // Log current CGM reading
+    logger->logEvent("[" + timestamp + "] CGM Reading: " + QString::number(currentBG) + " mmol/L");
+    qDebug() << "[" << timestamp << "] CGM Reading:" << currentBG << "mmol/L";
+
+    // Check for critically low or high blood glucose readings
+    // Critically low BG
+    if (currentBG <3) {
+        logger->logEvent("[" + timestamp + "] WARNING! Critically LOW BG. Blood glucose is " + QString::number(currentBG) + " mmol/L.");
+         qDebug() << "[" << timestamp << "] WARNING! Critically LOW BG. Blood glucose is" << currentBG << "mmol/L.";
+    // Critically high BG
+    } else if (currentBG > 20) {
+        logger->logEvent("[" + timestamp + "] WARNING! Critically HIGH BG. Blood glucose is " + QString::number(currentBG) + " mmol/L.");
+                qDebug() << "[" << timestamp << "] WARNING! Critically HIGH BG - Blood glucose is" << currentBG << "mmol/L.";
+    }
+
 
     // Update BG Level
     ui->glucoseLevel->setText(QString::number(currentBG));
@@ -604,6 +638,10 @@ void MainWindow::onControlIQTimerTimeout()
     int insulinLevel = controlIQ->getInsulinFillGauge();
     ui->insulinFillGaugeValue->setText(QString::number(insulinLevel));
     if (insulinLevel <= 0 && !insulinPopup) {
+
+        logger->logEvent("[" + timestamp + "] WARNING! LOW Insulin. The insulin fill gauge is empty. Please refill.");
+        qDebug() << "[" << timestamp << "] WARNING! LOW Insulin. The insulin fill gauge is empty. Please refill.";
+
         insulinPopup = new QDialog(this);
         insulinPopup->setModal(true);
         insulinPopup->setWindowTitle("Low Insulin Warning");
@@ -639,11 +677,16 @@ void MainWindow::onFetchFromCGMButtonClicked()
 
 void MainWindow::onImmediateDoseDelivered()
 {
+    QString simulationTime = getSimulatedTimestamp();
+    logger->logEvent("[" + simulationTime + "] Insulin delivery (Control-IQ): Immediate dose delivered.");
+    qDebug() << "[" << simulationTime << "] Insulin delivery (Control-IQ): Immediate dose delivered.";
     QMessageBox::information(this, "Bolus Update", "Immediate insulin dose delivered. Starting extended insulin delivery (if applicable).");
 }
 
-void MainWindow::onExtendedDoseCompleted()
-{
+void MainWindow::onExtendedDoseCompleted() {
+    QString simulationTime = getSimulatedTimestamp();
+    logger->logEvent("[" + simulationTime + "] Insulin delivery (Control-IQ): Extended dose completed.");
+    qDebug() << "[" << simulationTime << "] Insulin delivery (Control-IQ): Extended dose completed.";
     QMessageBox::information(this, "Bolus Update", "Extended insulin delivery completed!");
 }
 
