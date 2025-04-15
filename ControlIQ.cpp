@@ -310,7 +310,7 @@ void ControlIQ::monitorGlucoseLevel() {
     } 
     else if (bg >= 3.9 && bg < 6.5) {
         qDebug() << "BG low - Reducing basal rate by 35%" << endl;
-        deliverBasal(insulinPerInterval * 0.65);
+        deliverBasal(insulinPerInterval * 0.35);
     }
     else if (bg >= 6.5 && bg <= 10.0) {
         qDebug() << "BG normal - Delivering standard basal rate" << endl;
@@ -382,7 +382,7 @@ BolusDeliveryStatus ControlIQ::getBolusStatus()
 }
 
 void ControlIQ::simulateIOBFluctuation() {
-    if (bolusStatus == BolusDeliveryStatus::COMPLETED) {
+    if (bolusStatus == BolusDeliveryStatus::COMPLETED || bolusStatus == BolusDeliveryStatus::NOT_STARTED) {
 
         this->IOB = max(0.0, this->IOB - 0.5);
     }
@@ -411,40 +411,43 @@ double ControlIQ::generateRandomDouble(double min, double max) {
 void ControlIQ::predictBolusRequired() {
 
     if (!currentBloodGlucoseLevel || !currentProfile) {
-        cout << "Error: Missing glucose data or profile" << endl;
+        qDebug() << "Error: Missing glucose data or profile" << endl;
         return;
     }
 
     // will terminate if a bolus is running or paused
     if (bolusStatus == BolusDeliveryStatus::RUNNING || 
         bolusStatus == BolusDeliveryStatus::PAUSED ) {
-        cout << "Cannot predict - bolus is active" << endl;
+        qDebug() << "Cannot predict - bolus is active" << endl;
         return;
     }
 
     if (*currentBloodGlucoseLevel > 10.0) {
-        cout << "\n====== Auto Correction Bolus Check ======" << endl;
-        cout << "Blood glucose is high (" << *currentBloodGlucoseLevel << " mmol/L)" << endl;
+        qDebug() << "\n====== Auto Correction Bolus Check ======" << endl;
+        qDebug() << "Blood glucose is high (" << *currentBloodGlucoseLevel << " mmol/L)" << endl;
         
         // calc the units of bolus to deliver
         double targetGlucose = currentProfile->getTargetGlucose();
         double correctionFactor = currentProfile->getCorrectionFactor();
         double suggestedBolus = (*currentBloodGlucoseLevel - targetGlucose) / correctionFactor;
-        cout<<"-----Suggested dose = "<<suggestedBolus<<endl;
+        qDebug()<<"-----Suggested dose = "<<suggestedBolus<<endl;
         
         
         // adjust based on existing IOB
+        /*
         if (IOB > 0) {
-            cout << "Current IOB: " << IOB << " units" << endl;
+            qDebug() << "Current IOB: " << IOB << " units" << endl;
             suggestedBolus = max(0.0, suggestedBolus - (IOB * 0.5));    //use 50 % of remaining IOB.
-            cout<<"-----Suggested dose after IOB check= "<<suggestedBolus<<endl;
+            qDebug()<<"-----Suggested dose after IOB check= "<<suggestedBolus<<endl;
         }
+        */
+        qDebug() << "";
         
         // suggested bolus cannot be more than 5 units (prevent over correction)
         suggestedBolus = min(suggestedBolus, 5.0);
         
         if (suggestedBolus > 0) {
-            cout << "Delivering correction bolus: " << suggestedBolus << " units" << endl;
+            qDebug() << "Delivering correction bolus: " << suggestedBolus << " units" << endl;
             emit automaticBolusAdministered();
             deliverImmediateCorrectionBolus(suggestedBolus);
         }
@@ -454,24 +457,24 @@ void ControlIQ::predictBolusRequired() {
 
 void ControlIQ::deliverImmediateCorrectionBolus(double insulinAmt) {
     if (insulinFillGauge < insulinAmt) {
-        cout << "ERROR: Not enough insulin in reservoir!" << endl;
+        qDebug() << "ERROR: Not enough insulin in reservoir!" << endl;
         return;
     }
 
     // calc glucose drop
-    double glucoseLevelDrop = insulinAmt * 2 * (currentProfile->getCorrectionFactor());
+    double glucoseLevelDrop = insulinAmt *  (currentProfile->getCorrectionFactor());
     double oldGlucose = *currentBloodGlucoseLevel;
     
-    cout<<"Glucose level to drop = "<<glucoseLevelDrop<<endl;
+    qDebug()<<"Glucose level to drop = "<<glucoseLevelDrop<<endl;
     
     // deliver insulin and update values
     *currentBloodGlucoseLevel -= glucoseLevelDrop;
     this->IOB += insulinAmt;
     this->insulinFillGauge -= insulinAmt;
     
-    cout << "\n====== Correction Bolus Results ======" << endl;
-    cout << "Insulin delivered: " << insulinAmt << " units" << endl;
-    cout << "Glucose dropped from: " << oldGlucose << " to " << *currentBloodGlucoseLevel << " mmol/L" << endl;
-    cout << "New IOB: " << IOB << " units" << endl;
-    cout << "Remaining insulin: " << insulinFillGauge << " units" << endl;
+    qDebug() << "\n====== Correction Bolus Results ======" << endl;
+    qDebug() << "Insulin delivered: " << insulinAmt << " units" << endl;
+    qDebug() << "Glucose dropped from: " << oldGlucose << " to " << *currentBloodGlucoseLevel << " mmol/L" << endl;
+    qDebug() << "New IOB: " << IOB << " units" << endl;
+    qDebug() << "Remaining insulin: " << insulinFillGauge << " units" << endl;
 }
