@@ -445,6 +445,7 @@ void ControlIQ::predictBolusRequired() {
         
         if (suggestedBolus > 0) {
             cout << "Delivering correction bolus: " << suggestedBolus << " units" << endl;
+            emit automaticBolusAdministered();
             deliverImmediateCorrectionBolus(suggestedBolus);
         }
     }

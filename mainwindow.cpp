@@ -117,6 +117,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Connect ControlIQ signals to MainWindow slots
     connect(controlIQ, SIGNAL(immediateDoseDelivered()), this, SLOT(onImmediateDoseDelivered()));
     connect(controlIQ, SIGNAL(extendedDoseCompleted()), this, SLOT(onExtendedDoseCompleted()));
+    connect(controlIQ, SIGNAL(automaticBolusAdministered()), this, SLOT(onAutomaticBolusAdministered()));
 
     connect(ui->resumeBolusButton, SIGNAL(released()), this, SLOT(onResumeBolusButtonClicked()));
     connect(ui->pauseBolusButton, SIGNAL(released()), this, SLOT(onPauseBolusButtonClicked()));
@@ -577,6 +578,7 @@ void MainWindow::onControlIQTimerTimeout()
     controlIQ->mimicGlucoseSpike(); // Mimic natural glucose spik
     controlIQ->monitorGlucoseLevel(); // Monitor glucose level and deliver basal insulin accordingly
     controlIQ->deliverExtendedBolus(); // Deliver extended bolus insulin if a bolus has been started --> If no bolus running function will return immediately
+    controlIQ->predictBolusRequired(); // Predict if we need automatic correction bolus
 
     double currentBG = controlIQ->getCurrentBloodGlucose();
 
@@ -645,6 +647,11 @@ void MainWindow::onImmediateDoseDelivered()
 void MainWindow::onExtendedDoseCompleted()
 {
     QMessageBox::information(this, "Bolus Update", "Extended insulin delivery completed!");
+}
+
+void MainWindow::onAutomaticBolusAdministered()
+{
+    QMessageBox::warning(this, "BG Level Too High", "BG Level Predicted to Reach Maximum - Administering Automatic Correction Bolus");
 }
 
 void MainWindow::onRefillInsulinClicked()
