@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Create and start the control iq timer (fires every 5 seconds)
     controlIQTimer = new QTimer(this);
     connect(controlIQTimer, SIGNAL(timeout()), this, SLOT(onControlIQTimerTimeout()));
-    controlIQTimer->start(1000);
+    controlIQTimer->start(5000);
 
     // Initialize logger with the log widget from the UI
     logger = new Logger(ui->log);
