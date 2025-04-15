@@ -17,7 +17,7 @@ BolusCalculator.o: BolusCalculator.cpp BolusCalculator.h ProfileManager.h
 	g++ -c BolusCalculator.cpp
 
 ControlIQ.o: ControlIQ.cpp ControlIQ.h BolusCalculator.h
-	g++ -c ControlIQ.cpp
+	gcc -c ControlIQ.cpp
 
 CGM.o: CGM.cpp CGM.h ControlIQ.h
 	g++ -c CGM.cpp

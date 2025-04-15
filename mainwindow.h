@@ -41,6 +41,10 @@ private:
     Logger* logger;
     bool chargingInProgress = false;
 
+    // Counts # of simulation intervals
+    int simulationCounter;
+    QString getSimulatedTimestamp();
+
     USBConnection* battery;
     QDialog *batteryPopup = nullptr; // added member variable
 
