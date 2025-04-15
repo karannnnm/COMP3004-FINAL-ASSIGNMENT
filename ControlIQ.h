@@ -138,6 +138,7 @@ private:
 signals:
     void immediateDoseDelivered();
     void extendedDoseCompleted();
+    void automaticBolusAdministered();
 
 };
 

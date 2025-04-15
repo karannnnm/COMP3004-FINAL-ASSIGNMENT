@@ -86,6 +86,7 @@ private slots:
 
     void onImmediateDoseDelivered();
     void onExtendedDoseCompleted();
+    void onAutomaticBolusAdministered();
     void onRefillInsulinClicked();
 
     void onResumeBolusButtonClicked();
