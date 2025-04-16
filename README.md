@@ -47,4 +47,8 @@ File Organization:
 - Requirements Traceability Matrix: PDF of our Matrix
 - Use Cases for Tandem tX2 Insulin Pump Simulation
 
-Link for Simulation Video:
+Instructions on how to run:
+   1. Open terminal and run these commands to install QTCharts:
+         - sudo apt update
+         - sudo apt install libqt5charts5-dev
+  
