@@ -136,7 +136,7 @@ MainWindow::~MainWindow()
 }
 
 QString MainWindow::getSimulatedTimestamp() {
-    int totalMinutes = simulationCounter * 5;
+    int totalMinutes = simulationCounter * 30;
     int hours = totalMinutes / 60;
     int minutes = totalMinutes % 60;
     return QString("%1:%2min")
@@ -523,7 +523,7 @@ void MainWindow::onConfirmBolusButtonClicked()
     result += QString("Total Insulin Administered: %1 units").arg(bolusCalc->getTotalBolusAfterIOB(), 0, 'f', 0);
 
     logger->logEvent("[" + simulationTime + "] Insulin delivery (manual) initiated. Details: " + result);
-    qDebug() << "[" << simulationTime << "] Insulin delivery (manual) initiated. Details:" << result;
+    QMessageBox::information(this, "Bolus Calculation", result); // Display the results in an information popup
 
     // Update ControlIQ with the latest bolus calculator data
     controlIQ->fetchBolusData(*bolusCalc);
@@ -587,7 +587,7 @@ void MainWindow::showChargerPopup()
 
 void MainWindow::onControlIQTimerTimeout()
 {
-    // Each timer event represents 5 minutes simulated interval
+    // Each timer event represents 30 minutes simulated interval
     simulationCounter++;
     QString timestamp = getSimulatedTimestamp();
 
