@@ -5,16 +5,15 @@ using namespace std;
 
 #include "ProfileManager.h"
 
-// Constructor: Accepts a reference to ProfileManager so it can access stored profiles
+// Constructor accepts a reference to ProfileManager so it can access stored profiles
 BolusCalculator::BolusCalculator(ProfileManager& profileManager) : profileManager(profileManager) {}
-
-//load profile into BolusCalculator class.
 
 void BolusCalculator::getProfileByName(const std::string& profileName){
 
     //case1: if no profiles exist
     if (profileManager.isEmpty())
     {
+        // use default profile
         static Profile defaultProfile("Default Profile", 1.4, 1, 1, 5);
         currentProfile = &defaultProfile;
         fetchedICR = currentProfile->getCarbRatio();
@@ -84,13 +83,11 @@ void BolusCalculator::printStep2(){
     cout<<"currentBloodGlucoseLevel= "<<currentBloodGlucoseLevel<<endl;
     cout<<"totalCarbs= "<<totalCarbs<<endl;
     cout<<"IOB = "<<IOB<<endl;
-
 }
 
 double BolusCalculator::calculateBolus(){
     if (areInputsValid())
     {
-        
         //2.1
         double carbBolus = (this->totalCarbs)/fetchedICR;
         
@@ -111,9 +108,6 @@ double BolusCalculator::calculateBolus(){
     }
 }
 
-
-
-//extended bolus delivery calculation.
 
 void BolusCalculator::setPercentOfImmediateDose(double percent){
     if (percent<0 || percent>100)

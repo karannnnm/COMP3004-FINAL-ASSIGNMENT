@@ -1,17 +1,17 @@
 COMP 3004 Final Project: Implementing a Tandem Pump Simulation
 
 Team 37
-- Devanjali Das
-- Gurleen Bassali
-- Karan Modi
-- Zainab Jahangir
+- Devanjali Das: State Machine Diagrams, Sequence Diagrams.
+- Gurleen Bassali: Full Frontend Code, Video.
+- Karan Modi: Full Backend Code.
+- Zainab Jahangir: Use Cases, Use Case Diagram, Class Diagram, Sequence Diagrams.
 
 Project Description:
    This project is a simulation of the Tandem t:slim X2 Insulin Pump. The simulation demonstates the key features of the pump including:
       - Insulin Delivery: Both basal and bolus insulin injections
       - ControlIQ: Adjusts insulin delivery based on continuous glucose monitoring (CGM) data
-      - Profile Management: CRUD system for managing personal insulin delivery profiles (basal           rates, carb ratio, correction factor, target glucose)
-      - Monitoring and Logging: Real-time feedback on battery status, insulin levels, Insulin on           Board (IOB) and glucose levels; logging of events and error handling
+      - Profile Management: CRUD system for managing personal insulin delivery profiles (basal rates, carb ratio, correction factor, target glucose)
+      - Monitoring and Logging: Real-time feedback on battery status, insulin levels, Insulin on Board (IOB) and glucose levels; logging of events and error handling
 
 File Organization:
 
@@ -43,7 +43,7 @@ File Organization:
        9. Makefile
        10. team_project.pro.user
        11. team_project.pro
-       12. test.cppc
+       12. test.cpp
 - Requirements Traceability Matrix: PDF of our Matrix
 - Use Cases for Tandem tX2 Insulin Pump Simulation
 
