@@ -33,7 +33,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Instantiate ControlIQ
     controlIQ  = new ControlIQ();
-    //controlIQ->fetchBolusData(*bolusCalc);
     controlIQ->linkCurrentBloodGlucoseLevel(*bolusCalc);
     controlIQ->fetchCurrentProfile(*bolusCalc);
 
@@ -95,7 +94,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Set log widget to read-only
     ui->log->setReadOnly(true);
 
-    // Connect UI buttons to their respective slots
+    // Slot signal connections
     connect(ui->powerButton, SIGNAL(released()), this, SLOT(onPowerButtonHeld()));
     connect(ui->unlockButton, SIGNAL(released()), this, SLOT(onUnlockButtonClicked()));
     connect(ui->bolusButton, SIGNAL(released()), this, SLOT(onBolusButtonClicked()));
@@ -180,7 +179,7 @@ void MainWindow::updateBatteryDisplay()
         }
     }
 
-// New slot: checks battery level after a delay
+// Checks battery level after a delay
 void MainWindow::checkBatteryAfterDelay()
 {
     if (battery->getBatteryLevel() == 0 && !batteryPopup && !chargingInProgress) {
@@ -260,6 +259,7 @@ void MainWindow::option1Clicked()
     ui->stackedWidget->setCurrentIndex(4);
 }
 
+// Called when the "Power Off" option is selected
 void MainWindow::option2Clicked()
 {
     ui->stackedWidget->setCurrentIndex(0);
@@ -355,7 +355,7 @@ void MainWindow::onEditProfileClicked()
     setDetailsReadOnly(false);
 }
 
-// Called to save changes made to a profilE
+// Called to save changes made to a profile
 void MainWindow::onSaveProfileClicked()
 {
     QListWidgetItem *selectedItem = ui->profileList->currentItem();
@@ -393,8 +393,7 @@ void MainWindow::onDeleteProfileClicked()
         return;
 
     QString profileName = selectedItem->data(Qt::UserRole).toString();
-    int ret = QMessageBox::question(this, "Delete Profile",
-                                    "Are you sure you want to delete the profile '" + profileName + "'?");
+    int ret = QMessageBox::question(this, "Delete Profile", "Are you sure you want to delete the profile '" + profileName + "'?");
     if (ret == QMessageBox::Yes) {
         bool success = profileManager->deleteProfile(profileName.toStdString());
         if (success) {
@@ -554,12 +553,12 @@ void MainWindow::resetBolusCalculatorUI()
     ui->suggestedDoseValue->clear();
     ui->overrideDoseValue->setValue(0.0);
 
-    // Reset these fields to zero or other defaults
+    // Reset fields to zeros
     ui->quickBolusPercent->setValue(0);
     ui->extendedBolusPercent->setValue(0);
     ui->extendedBolusHours->setValue(0);
 
-    // Disable the override dose, quick bolus, and extended bolus fields
+    // Disable the fields
     ui->overrideDoseValue->setEnabled(false);
     ui->quickBolusPercent->setEnabled(false);
     ui->extendedBolusPercent->setEnabled(false);
@@ -592,11 +591,10 @@ void MainWindow::onControlIQTimerTimeout()
     simulationCounter++;
     QString timestamp = getSimulatedTimestamp();
 
-    controlIQ->mimicGlucoseSpike(); // Mimic natural glucose spik
+    controlIQ->mimicGlucoseSpike(); // Mimic natural glucose spike
     controlIQ->monitorGlucoseLevel(); // Monitor glucose level and deliver basal insulin accordingly
     controlIQ->deliverExtendedBolus(); // Deliver extended bolus insulin if a bolus has been started --> If no bolus running function will return immediately
     controlIQ->predictBolusRequired(); // Predict if we need automatic correction bolus
-
 
     double currentBG = controlIQ->getCurrentBloodGlucose();
 
@@ -614,7 +612,6 @@ void MainWindow::onControlIQTimerTimeout()
         logger->logEvent("[" + timestamp + "] WARNING! Critically HIGH BG. Blood glucose is " + QString::number(currentBG) + " mmol/L.");
                 qDebug() << "[" << timestamp << "] WARNING! Critically HIGH BG - Blood glucose is" << currentBG << "mmol/L.";
     }
-
 
     // Update BG Level
     ui->glucoseLevel->setText(QString::number(currentBG));
