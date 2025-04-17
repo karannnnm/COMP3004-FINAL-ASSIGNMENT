@@ -12,6 +12,7 @@ Project Description:
       - ControlIQ: Adjusts insulin delivery based on continuous glucose monitoring (CGM) data
       - Profile Management: CRUD system for managing personal insulin delivery profiles (basal rates, carb ratio, correction factor, target glucose)
       - Monitoring and Logging: Real-time feedback on battery status, insulin levels, Insulin on Board (IOB) and glucose levels; logging of events and error handling
+      - Timing: CGM measurements occur every 5 real seconds at 30 minute simulation intervals. 1 real second is equivalent to 6 simulated minutes.
 
 File Organization:
 
